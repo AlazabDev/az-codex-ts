@@ -50,13 +50,13 @@ function ChatLayout() {
 
   async function update(t: Thread, patch: Partial<Pick<Thread, "pinned" | "archived">>) {
     const { error } = await supabase.from("threads").update(patch).eq("id", t.id);
-    if (error) return toast.error("تعذر التحديث");
+    if (error) { toast.error("تعذر التحديث"); return; }
     qc.invalidateQueries({ queryKey: ["threads"] });
   }
 
   async function remove(t: Thread) {
     const { error } = await supabase.from("threads").delete().eq("id", t.id);
-    if (error) return toast.error("تعذر الحذف");
+    if (error) { toast.error("تعذر الحذف"); return; }
     await qc.invalidateQueries({ queryKey: ["threads"] });
     if (params.threadId === t.id) navigate({ to: "/chat" });
   }

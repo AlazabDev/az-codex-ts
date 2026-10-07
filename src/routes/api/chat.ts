@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
@@ -95,7 +95,7 @@ export const Route = createFileRoute("/api/chat")({
               user_id: userId,
               sdk_id: m.id,
               role: m.role,
-              parts: m.parts as unknown as Database["public"]["Tables"]["messages"]["Insert"]["parts"],
+              parts: JSON.parse(JSON.stringify(m.parts)) as Json,
             }));
             const { error } = await supabase
               .from("messages")
