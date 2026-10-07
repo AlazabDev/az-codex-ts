@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from "@/components/theme-provider";
 import { AzLogo } from "@/components/AzLogo";
@@ -126,9 +127,9 @@ function SettingsPage() {
             <div aria-live="polite">{connection && <p className={`mb-6 flex items-start gap-2 text-sm ${connection.ok ? "text-primary" : "text-destructive"}`}>{connection.ok ? <CheckCircle2 className="size-4 shrink-0" /> : <CircleAlert className="size-4 shrink-0" />}{connection.message}</p>}</div>
             <form onSubmit={saveAgent} className="space-y-6">
               <div className="flex items-center justify-between gap-4"><Label htmlFor="agent-enabled">تفعيل اتصال الوكيل</Label><Switch id="agent-enabled" checked={settings.enabled} onCheckedChange={(enabled) => patchSettings({ enabled })} /></div>
-              <div className="space-y-2"><Label htmlFor="agent-language">لغة الردود</Label><select id="agent-language" value={settings.language} onChange={(e) => patchSettings({ language: e.target.value as AgentSettings["language"] })} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="auto">لغة المحادثة</option><option value="ar">العربية</option><option value="en">English</option></select></div>
-              <div className="space-y-2"><Label htmlFor="agent-style">تفصيل الردود</Label><select id="agent-style" value={settings.style} onChange={(e) => patchSettings({ style: e.target.value as AgentSettings["style"] })} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="balanced">متوازن</option><option value="concise">مختصر</option><option value="detailed">تفصيلي</option></select></div>
-              <div className="space-y-2"><Label htmlFor="agent-instructions">تعليمات مخصصة</Label><Textarea id="agent-instructions" rows={5} maxLength={2000} value={settings.instructions} onChange={(e) => patchSettings({ instructions: e.target.value })} /><p className="text-left text-xs text-muted-foreground">{settings.instructions.length} / 2000</p></div>
+              <div className="space-y-2"><Label htmlFor="agent-language">لغة الردود</Label><Select dir="rtl" value={settings.language} onValueChange={(value) => patchSettings({ language: value as AgentSettings["language"] })}><SelectTrigger id="agent-language"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="auto">لغة المحادثة</SelectItem><SelectItem value="ar">العربية</SelectItem><SelectItem value="en">English</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label htmlFor="agent-style">تفصيل الردود</Label><Select dir="rtl" value={settings.style} onValueChange={(value) => patchSettings({ style: value as AgentSettings["style"] })}><SelectTrigger id="agent-style"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="balanced">متوازن</SelectItem><SelectItem value="concise">مختصر</SelectItem><SelectItem value="detailed">تفصيلي</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label htmlFor="agent-instructions">تعليمات مخصصة</Label><Textarea id="agent-instructions" rows={5} maxLength={2000} value={settings.instructions} onChange={(e) => patchSettings({ instructions: e.target.value })} /><p dir="ltr" className="text-left text-xs text-muted-foreground">{settings.instructions.length} / 2000</p></div>
               <Button type="submit" disabled={saving !== null}><Save />{saving === "agent" ? "جارٍ الحفظ…" : "حفظ إعدادات الوكيل"}</Button>
             </form>
           </TabsContent>
