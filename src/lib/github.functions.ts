@@ -8,7 +8,8 @@ export const startGithubConnect = createServerFn({ method:'POST' }).middleware([
  const {getConnectionKeyForUser}=await import('./integrations/connections.server'); const {authorizeAppUserOAuth}=await import('@/integrations/lovable/appUserConnector');
  const clientAPIKey=process.env['GITHUB_APP_USER_CONNECTOR_CLIENT_API_KEY']; if(!clientAPIKey)throw new Error('إعداد GitHub غير مكتمل');
  const req=getRequest(); const url=new URL(req.url); const host=url.hostname==='localhost'?req.headers.get('x-forwarded-host'):null;
- return authorizeAppUserOAuth({gatewayBaseUrl:BASE,connectorId:'github',appUserId:context.userId,clientAPIKey,returnUrl:new URL('/oauth/github/return',host?`https://${host}`:url.origin).toString(),connectionAPIKey:await getConnectionKeyForUser(context.userId,'github')??undefined,credentialsConfiguration:{scopes:SCOPES}});
+ const connectionAPIKey=await getConnectionKeyForUser(context.userId,'github');
+ return authorizeAppUserOAuth({gatewayBaseUrl:BASE,connectorId:'github',appUserId:context.userId,clientAPIKey,returnUrl:new URL('/oauth/github/return',host?`https://${host}`:url.origin).toString(),...(connectionAPIKey?{connectionAPIKey}:{}),credentialsConfiguration:{scopes:SCOPES}});
 });
 export const completeGithubConnection=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((d)=>z.object({code:z.string().min(1).max(4096)}).parse(d)).handler(async({context,data})=>{
  const {exchangeAppUserOAuthCode}=await import('@/integrations/lovable/appUserConnector'); const {saveConnectionKeyForUser}=await import('./integrations/connections.server');
