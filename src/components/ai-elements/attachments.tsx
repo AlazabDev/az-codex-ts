@@ -26,7 +26,7 @@ import { createContext, useCallback, useContext, useMemo } from "react";
 
 export type AttachmentData =
   | (FileUIPart & { id: string })
-  | (SourceDocumentUIPart & { id: string });
+  | (SourceDocumentUIPart & { id: string; filename?: string });
 
 export type AttachmentMediaCategory =
   | "image"
@@ -87,7 +87,7 @@ export const getAttachmentLabel = (data: AttachmentData): string => {
 
 const renderAttachmentImage = (
   url: string,
-  filename: string | undefined,
+  filename: string | null | undefined,
   isGrid: boolean
 ) =>
   isGrid ? (
@@ -121,7 +121,7 @@ const AttachmentsContext = createContext<AttachmentsContextValue | null>(null);
 interface AttachmentContextValue {
   data: AttachmentData;
   mediaCategory: AttachmentMediaCategory;
-  onRemove?: () => void;
+  onRemove?: (() => void) | undefined;
   variant: AttachmentVariant;
 }
 
@@ -181,7 +181,7 @@ export const Attachments = ({
 
 export type AttachmentProps = HTMLAttributes<HTMLDivElement> & {
   data: AttachmentData;
-  onRemove?: () => void;
+  onRemove?: (() => void) | undefined;
 };
 
 export const Attachment = ({

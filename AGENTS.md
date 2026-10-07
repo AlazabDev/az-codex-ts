@@ -14,3 +14,6 @@
 - Settings live on an authenticated sibling route; non-privileged agent preferences are stored in auth user metadata and validated on the server so chat consistently applies them.
 - Theme preferences use a root provider and browser storage with semantic light/dark tokens so every page shares the chosen appearance.
 - Agent connection checks use an authenticated server function against the existing model; credentials never reach the browser.
+- Curated Git/Frappe reference context is injected into chat independently of user preferences; it distinguishes knowledge from live service access.
+- GitHub browsing uses authenticated server functions and encrypted per-user connector keys; the labeled example is isolated from live data.
+- Frappe setup stores only validated nonsecret display preferences in user metadata; real connection credentials and live reads remain disabled until authorized.
