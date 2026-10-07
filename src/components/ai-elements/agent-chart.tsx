@@ -44,9 +44,9 @@ function parseSpec(raw: string): ChartSpec | null {
 }
 
 function resolve(spec: ChartSpec) {
-  const first = spec.data[0];
+  const first = spec.data[0] ?? {};
   const keys = Object.keys(first);
-  const xKey = spec.xKey ?? keys.find((k) => typeof first[k] === "string") ?? keys[0];
+  const xKey: string = spec.xKey ?? keys.find((k) => typeof first[k] === "string") ?? keys[0] ?? "name";
   const series =
     spec.series && spec.series.length
       ? spec.series
@@ -163,7 +163,7 @@ export function ChartedResponse({ text, isStreaming }: { text: string; isStreami
     <>
       {segments.map((s, i) =>
         s.kind === "md" ? (
-          s.value.trim() ? <MessageResponse key={i} isAnimating={isStreaming}>{s.value}</MessageResponse> : null
+          s.value.trim() ? <MessageResponse key={i} isAnimating={!!isStreaming}>{s.value}</MessageResponse> : null
         ) : s.kind === "chart" ? (
           <AgentChart key={i} raw={s.value} />
         ) : (
