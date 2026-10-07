@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Archive, ArchiveRestore, LogOut, Pin, PinOff, Plus, Search, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, LogOut, Pin, PinOff, Plus, Search, Settings, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { createThread, threadsQuery, type Thread } from "@/lib/threads";
@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/chat")({
       { name: "description", content: "مساحة محادثة AzCodex مع وكيل الذكاء الاصطناعي." },
       { property: "og:title", content: "المحادثات — AzCodex" },
       { property: "og:description", content: "مساحة محادثة AzCodex مع وكيل الذكاء الاصطناعي." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ChatLayout,
@@ -138,6 +140,9 @@ function ChatLayout() {
           ))}
         </nav>
         <div className="border-t border-sidebar-border p-3">
+          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+            <Link to="/settings"><Settings className="size-4" /> الإعدادات</Link>
+          </Button>
           <Button variant="ghost" onClick={signOut} className="w-full justify-start gap-2 text-muted-foreground">
             <LogOut className="size-4" /> تسجيل الخروج
           </Button>

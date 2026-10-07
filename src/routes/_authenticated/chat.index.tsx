@@ -5,6 +5,14 @@ import { createThread, threadsQuery } from "@/lib/threads";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 
 export const Route = createFileRoute("/_authenticated/chat/")({
+  head: () => ({ meta: [
+    { title: "مساحة العمل — AzCodex" },
+    { name: "description", content: "افتح محادثاتك المحفوظة أو ابدأ محادثة جديدة مع AzCodex." },
+    { property: "og:title", content: "مساحة العمل — AzCodex" },
+    { property: "og:description", content: "المحادثات المحفوظة ومساحة عمل الوكيل الذكي." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: ChatIndex,
 });
 

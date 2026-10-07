@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import type { Database, Json } from "@/integrations/supabase/types";
+import { parseAgentSettings, agentPreferencePrompt } from "@/lib/agent-settings";
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
@@ -48,6 +49,8 @@ export const Route = createFileRoute("/api/chat")({
         const { data: userData, error: userErr } = await supabase.auth.getUser(token);
         if (userErr || !userData.user) return json(401, "جلسة غير صالحة");
         const userId = userData.user.id;
+        const settings = parseAgentSettings(userData.user.user_metadata["agent_settings"]);
+        if (!settings.enabled) return json(403, "اتصال الوكيل متوقف؛ فعّله من الإعدادات.");
 
         const body = (await request.json()) as { messages?: UIMessage[]; threadId?: string };
         const messages = body.messages;
@@ -74,7 +77,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const result = streamText({
           model: provider.responses("openai/gpt-6-astra"),
-          system: SYSTEM,
+          system: SYSTEM + "\n\n" + agentPreferencePrompt(settings),
           messages: await convertToModelMessages(messages),
           abortSignal: request.signal,
           providerOptions: {

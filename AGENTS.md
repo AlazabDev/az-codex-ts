@@ -11,3 +11,6 @@
 
 - Chat streams via `src/routes/api/chat.ts` (server route, verifies bearer token, saves UIMessages to `messages` keyed by thread + sdk_id) — keeps model calls and keys server-side.
 - Threads are read/written from the browser client under RLS (`src/lib/threads.ts`); thread pages live at `/chat/$threadId` under `_authenticated`.
+- Settings live on an authenticated sibling route; non-privileged agent preferences are stored in auth user metadata and validated on the server so chat consistently applies them.
+- Theme preferences use a root provider and browser storage with semantic light/dark tokens so every page shares the chosen appearance.
+- Agent connection checks use an authenticated server function against the existing model; credentials never reach the browser.

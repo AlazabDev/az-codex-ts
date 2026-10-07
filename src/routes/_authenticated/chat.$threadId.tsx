@@ -26,6 +26,14 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { AzLogo } from "@/components/AzLogo";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
+  head: () => ({ meta: [
+    { title: "محادثة الوكيل — AzCodex" },
+    { name: "description", content: "تحدث مع وكيل AzCodex واعرض الردود والرسوم البيانية التفاعلية." },
+    { property: "og:title", content: "محادثة الوكيل — AzCodex" },
+    { property: "og:description", content: "مساحة محادثتك مع وكيل AzCodex الذكي." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: ThreadPage,
 });
 

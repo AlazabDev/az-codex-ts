@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "AzCodex: محادثة احترافية مع وكيل ذكاء اصطناعي للتطوير والتشغيل وFrappe/ERPNext." },
       { property: "og:title", content: "AzCodex — وكيل الهندسة والتشغيل الذكي" },
       { property: "og:description", content: "محادثة احترافية مع وكيل ذكاء اصطناعي للتطوير والتشغيل." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,

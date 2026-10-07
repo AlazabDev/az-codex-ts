@@ -61,7 +61,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
+:root, .dark {
   --radius: 0.75rem;
   --background: oklch(0.17 0.012 250);
   --foreground: oklch(0.94 0.008 80);
@@ -97,6 +97,36 @@
   --sidebar-ring: oklch(0.76 0.15 62);
   --grid-line: oklch(0.76 0.15 62 / 0.06);
   --glow: 0 0 0 1px oklch(0.76 0.15 62 / 0.25), 0 10px 40px -10px oklch(0.76 0.15 62 / 0.35);
+}
+
+:root:not(.dark) {
+  --background: oklch(0.985 0.003 250);
+  --foreground: oklch(0.24 0.012 250);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.55 0.13 62);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.008 250);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.95 0.006 250);
+  --muted-foreground: oklch(0.48 0.015 250);
+  --accent: oklch(0.93 0.012 250);
+  --accent-foreground: var(--foreground);
+  --border: oklch(0.87 0.009 250);
+  --input: oklch(0.82 0.01 250);
+  --ring: var(--primary);
+  --sidebar: oklch(0.96 0.006 250);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.91 0.01 250);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
+  --grid-line: oklch(0.55 0.13 62 / 0.05);
+  --glow: 0 0 0 1px oklch(0.55 0.13 62 / 0.1), 0 10px 30px -10px oklch(0.3 0.01 250 / 0.1);
 }
 
 @layer base {
