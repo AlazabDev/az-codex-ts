@@ -91,6 +91,7 @@ function SettingsPage() {
       </header>
       <main className="mx-auto max-w-5xl px-5 py-9">
         <h1 className="text-3xl font-semibold">الإعدادات</h1>
+        <nav className="mt-5 flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/github">GitHub</Link></Button><Button asChild variant="outline"><Link to="/frappe">Frappe / ERPNext</Link></Button></nav>
         <Tabs defaultValue="account" dir="rtl" className="mt-8">
           <TabsList className="mb-7 flex h-auto w-full flex-wrap justify-start gap-1 bg-muted p-1 sm:w-fit">
             <TabsTrigger value="account" className="gap-2"><UserRound className="size-4" /> الحساب</TabsTrigger>
