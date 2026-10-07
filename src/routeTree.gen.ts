@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedFrappeRouteImport } from './routes/_authenticated/frappe'
+import { Route as AuthenticatedGithubRouteImport } from './routes/_authenticated/github'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
@@ -36,6 +38,16 @@ const AuthRoute = AuthRouteImport.update({
 const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFrappeRoute = AuthenticatedFrappeRouteImport.update({
+  id: '/frappe',
+  path: '/frappe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGithubRoute = AuthenticatedGithubRouteImport.update({
+  id: '/github',
+  path: '/github',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -69,6 +81,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/chat': typeof AuthenticatedChatRouteWithChildren
+  '/frappe': typeof AuthenticatedFrappeRoute
+  '/github': typeof AuthenticatedGithubRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
@@ -78,6 +92,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/frappe': typeof AuthenticatedFrappeRoute
+  '/github': typeof AuthenticatedGithubRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
@@ -90,6 +106,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/chat': typeof AuthenticatedChatRouteWithChildren
+  '/_authenticated/frappe': typeof AuthenticatedFrappeRoute
+  '/_authenticated/github': typeof AuthenticatedGithubRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
@@ -102,6 +120,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/chat'
+    | '/frappe'
+    | '/github'
     | '/settings'
     | '/api/chat'
     | '/chat/$threadId'
@@ -111,6 +131,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/frappe'
+    | '/github'
     | '/settings'
     | '/api/chat'
     | '/chat/$threadId'
@@ -122,6 +144,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/chat'
+    | '/_authenticated/frappe'
+    | '/_authenticated/github'
     | '/_authenticated/settings'
     | '/api/chat'
     | '/_authenticated/chat/$threadId'
@@ -165,6 +189,20 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof AuthenticatedChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/frappe': {
+      id: '/_authenticated/frappe'
+      path: '/frappe'
+      fullPath: '/frappe'
+      preLoaderRoute: typeof AuthenticatedFrappeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/github': {
+      id: '/_authenticated/github'
+      path: '/github'
+      fullPath: '/github'
+      preLoaderRoute: typeof AuthenticatedGithubRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -220,11 +258,15 @@ const AuthenticatedChatRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRouteWithChildren
+  AuthenticatedFrappeRoute: typeof AuthenticatedFrappeRoute
+  AuthenticatedGithubRoute: typeof AuthenticatedGithubRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRouteWithChildren,
+  AuthenticatedFrappeRoute: AuthenticatedFrappeRoute,
+  AuthenticatedGithubRoute: AuthenticatedGithubRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
