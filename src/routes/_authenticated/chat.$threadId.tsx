@@ -12,7 +12,8 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
-import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import { ChartedResponse } from "@/components/ai-elements/agent-chart";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import {
   PromptInput,
@@ -128,7 +129,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                       return m.role === "user" ? (
                         <p key={i} className="whitespace-pre-wrap">{part.text}</p>
                       ) : (
-                        <MessageResponse key={i}>{part.text}</MessageResponse>
+                        <ChartedResponse key={i} text={part.text} isStreaming={part.state === "streaming"} />
                       );
                     if (part.type === "reasoning" && part.text)
                       return (
