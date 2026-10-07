@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { parseAgentSettings, agentPreferencePrompt } from "@/lib/agent-settings";
+import { AGENT_DOMAIN_KNOWLEDGE } from "@/lib/agent-knowledge";
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
@@ -77,7 +78,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const result = streamText({
           model: provider.responses("openai/gpt-6-astra"),
-          system: SYSTEM + "\n\n" + agentPreferencePrompt(settings),
+           system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings),
           messages: await convertToModelMessages(messages),
           abortSignal: request.signal,
           providerOptions: {
