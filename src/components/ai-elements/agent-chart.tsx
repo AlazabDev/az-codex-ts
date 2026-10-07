@@ -151,7 +151,7 @@ export function ChartedResponse({ text, isStreaming }: { text: string; isStreami
     let m: RegExpExecArray | null;
     while ((m = re.exec(text))) {
       if (m.index > last) out.push({ kind: "md", value: text.slice(last, m.index) });
-      out.push({ kind: m[2] === "```" ? "chart" : "pending", value: m[1] });
+      out.push({ kind: m[2] === "```" ? "chart" : "pending", value: m[1] ?? "" });
       last = re.lastIndex;
       if (m[0].length === 0) break;
     }
