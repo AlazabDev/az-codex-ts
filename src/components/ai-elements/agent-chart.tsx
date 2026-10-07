@@ -30,7 +30,7 @@ type ChartSpec = {
   data: Record<string, string | number>[];
 };
 
-const COLORS = [1, 2, 3, 4, 5].map((n) => `var(--chart-${n})`);
+const COLORS: string[] = [1, 2, 3, 4, 5].map((n) => `var(--chart-${n})`);
 
 function parseSpec(raw: string): ChartSpec | null {
   try {
@@ -50,7 +50,7 @@ function resolve(spec: ChartSpec) {
   const series =
     spec.series && spec.series.length
       ? spec.series
-      : keys.filter((k) => k !== xKey && typeof first[k] === "number").map((k) => ({ key: k }));
+      : keys.filter((k) => k !== xKey && typeof first[k] === "number").map((k): { key: string; label?: string } => ({ key: k }));
   return { xKey, series };
 }
 
@@ -90,7 +90,7 @@ export function AgentChart({ raw }: { raw: string }) {
           label
         >
           {spec.data.map((_, i) => (
-            <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="var(--background)" />
+            <Cell key={i} fill={COLORS[i % COLORS.length] ?? "var(--chart-1)"} stroke="var(--background)" />
           ))}
         </Pie>
       </PieChart>
@@ -105,14 +105,14 @@ export function AgentChart({ raw }: { raw: string }) {
         <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)", opacity: 0.4 }} />
         {series.length > 1 && <Legend />}
         {series.map((s, i) => {
-          const color = COLORS[i % COLORS.length];
+          const color = COLORS[i % COLORS.length] ?? "var(--chart-1)";
           const name = s.label ?? s.key;
-          const stackId = spec.stacked ? "a" : undefined;
+          const stack = spec.stacked ? { stackId: "a" } : {};
           if (spec.type === "line")
             return <Line key={s.key} dataKey={s.key} name={name} stroke={color} strokeWidth={2} dot={{ r: 3 }} type="monotone" />;
           if (spec.type === "area")
-            return <Area key={s.key} dataKey={s.key} name={name} stroke={color} fill={color} fillOpacity={0.25} type="monotone" stackId={stackId} />;
-          return <Bar key={s.key} dataKey={s.key} name={name} fill={color} radius={[4, 4, 0, 0]} stackId={stackId} />;
+            return <Area key={s.key} dataKey={s.key} name={name} stroke={color} fill={color} fillOpacity={0.25} type="monotone" {...stack} />;
+          return <Bar key={s.key} dataKey={s.key} name={name} fill={color} radius={[4, 4, 0, 0]} {...stack} />;
         })}
       </Chart>
     );
