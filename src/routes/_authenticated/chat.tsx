@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/chat")({
       { name: "description", content: "مساحة محادثة AzCodex مع وكيل الذكاء الاصطناعي." },
       { property: "og:title", content: "المحادثات — AzCodex" },
       { property: "og:description", content: "مساحة محادثة AzCodex مع وكيل الذكاء الاصطناعي." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ChatLayout,

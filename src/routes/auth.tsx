@@ -14,6 +14,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "سجّل الدخول إلى مساحة عمل AzCodex." },
       { property: "og:title", content: "تسجيل الدخول — AzCodex" },
       { property: "og:description", content: "سجّل الدخول إلى مساحة عمل AzCodex." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
