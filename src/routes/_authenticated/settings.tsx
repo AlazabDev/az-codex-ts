@@ -31,11 +31,11 @@ function SettingsPage() {
   const { user } = Route.useRouteContext();
   const { theme, setTheme } = useTheme();
   const checkConnection = useServerFn(testAgentConnection);
-  const [name, setName] = useState<string>(user.user_metadata.full_name ?? "");
+  const [name, setName] = useState<string>(typeof user.user_metadata["full_name"] === "string" ? user.user_metadata["full_name"] : "");
   const [email, setEmail] = useState(user.email ?? "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [settings, setSettings] = useState(() => parseAgentSettings(user.user_metadata.agent_settings));
+  const [settings, setSettings] = useState(() => parseAgentSettings(user.user_metadata["agent_settings"]));
   const [saving, setSaving] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [connection, setConnection] = useState<{ ok: boolean; message: string } | null>(null);
