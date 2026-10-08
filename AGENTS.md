@@ -17,3 +17,6 @@
 - Curated Git/Frappe reference context is injected into chat independently of user preferences; it distinguishes knowledge from live service access.
 - GitHub browsing uses authenticated server functions and encrypted per-user connector keys; the labeled example is isolated from live data.
 - Frappe setup stores only validated nonsecret display preferences in user metadata; real connection credentials and live reads remain disabled until authorized.
+- Chat uses the Microsoft Foundry agent (Entra client-credentials, `src/lib/ai/foundry.server.ts`) when Azure secrets exist, falling back to the AI Gateway — keeps one chat route for both.
+- Frappe bench tools (`src/lib/ai/bench-tools.server.ts`) run only when the app is self-hosted with BENCH_TOOLS_ENABLED=1; paths are confined to the bench and irreversible commands stay blocked.
+- Database access goes straight through the Supabase client and migrations; no ORM layer.
