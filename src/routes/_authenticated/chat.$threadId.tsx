@@ -19,7 +19,7 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import {
   PromptInput,
   PromptInputActionAddAttachments,
-  PromptInputAttachments,
+  usePromptInputAttachments,
   PromptInputBody,
   PromptInputFooter,
   PromptInputHeader,
@@ -29,7 +29,8 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import {
   Attachment,
-  AttachmentDownload,
+  AttachmentRemove,
+  useAttachmentContext,
   AttachmentInfo,
   AttachmentPreview,
   Attachments,
@@ -146,7 +147,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
 
       uploaded.push({
         type: "file",
-        filename: file.filename,
+        filename: file.filename ?? safeName,
         mediaType: file.mediaType,
         url: signedData?.signedUrl || file.url,
       });
@@ -293,5 +294,38 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         </PromptInput>
       </div>
     </div>
+  );
+}
+
+function AttachmentDownload() {
+  const { data } = useAttachmentContext();
+  const url = "url" in data ? data.url : undefined;
+  if (!url) return null;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      download={"filename" in data ? data.filename : undefined}
+      className="ms-auto text-xs font-medium text-primary hover:underline"
+    >
+      تنزيل
+    </a>
+  );
+}
+
+function PromptInputAttachments() {
+  const attachments = usePromptInputAttachments();
+  if (!attachments.files.length) return null;
+  return (
+    <Attachments variant="inline">
+      {attachments.files.map((file) => (
+        <Attachment key={file.id} data={file} onRemove={() => attachments.remove(file.id)}>
+          <AttachmentPreview />
+          <AttachmentInfo />
+          <AttachmentRemove />
+        </Attachment>
+      ))}
+    </Attachments>
   );
 }
