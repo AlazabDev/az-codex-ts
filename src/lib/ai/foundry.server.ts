@@ -37,7 +37,7 @@ export function foundryProvider() {
     fetch: async (input, init) => {
       const headers = new Headers(init?.headers);
       headers.set("Authorization", `Bearer ${await getToken()}`);
-      let body = init?.body;
+      let body = init?.body ?? null;
       if (typeof body === "string") {
         const parsed = JSON.parse(body) as Record<string, unknown>;
         delete parsed["model"];
