@@ -816,11 +816,3 @@ Deploy
 ↓
 Monitor
 ```
-
-
-> **Az Codex is an AI-powered engineering and operations workspace built for Alazab Group. It combines intelligent chat, software development, Git and file management, terminal access, Microsoft Foundry, MCP integrations, Frappe/ERPNext operations, diagnostics, production validation, and deployment controls in a single secure platform.**
-
-
-
-> **Az Codex هو منصة هندسية وتشغيلية مدعومة بالذكاء الاصطناعي، صُممت لتكون مركز التحكم الموحد لأنظمة العزب. تجمع المنصة بين المحادثة الذكية، تطوير البرمجيات، إدارة Git والملفات، الطرفية، Microsoft Foundry، تكاملات MCP، تشغيل Frappe وERPNext، أدوات التشخيص، فحوصات الإنتاج، وإدارة النشر داخل بيئة واحدة آمنة ومتكاملة.**
-
