@@ -7,6 +7,7 @@ import { benchTools, benchToolsEnabled } from "@/lib/ai/bench-tools.server";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { parseAgentSettings, agentPreferencePrompt } from "@/lib/agent-settings";
 import { AGENT_DOMAIN_KNOWLEDGE } from "@/lib/agent-knowledge";
+import { parseAgents, resolveAgent } from "@/lib/agents";
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
@@ -55,10 +56,11 @@ export const Route = createFileRoute("/api/chat")({
         const settings = parseAgentSettings(userData.user.user_metadata["agent_settings"]);
         if (!settings.enabled) return json(403, "اتصال الوكيل متوقف؛ فعّله من الإعدادات.");
 
-        const body = (await request.json()) as { messages?: UIMessage[]; threadId?: string };
+        const body = (await request.json()) as { messages?: UIMessage[]; threadId?: string; agentId?: string };
         const messages = body.messages;
         const threadId = body.threadId;
         if (!Array.isArray(messages) || !threadId) return json(400, "طلب غير صالح");
+        const agent = resolveAgent(parseAgents(userData.user.user_metadata["agents"]), body.agentId);
 
         const { data: thread } = await supabase
           .from("threads")
@@ -78,15 +80,19 @@ export const Route = createFileRoute("/api/chat")({
           fetch: runIdFetch.fetch,
         });
 
+        const useFoundry = agent.model === "foundry" && foundryConfigured();
+        const modelId = agent.model === "foundry" ? "openai/gpt-6-astra" : agent.model;
+        const isOpenAI = modelId.startsWith("openai/");
         const result = streamText({
-          model: foundryConfigured()
+          model: useFoundry
             ? foundryProvider().responses("az-agent-copilot")
-            : provider.responses("openai/gpt-6-astra"),
-          ...(benchToolsEnabled() ? { tools: benchTools(), stopWhen: stepCountIs(15) } : {}),
-           system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings),
+            : isOpenAI ? provider.responses(modelId) : provider.chat(modelId),
+          ...(agent.benchTools && benchToolsEnabled() ? { tools: benchTools(), stopWhen: stepCountIs(15) } : {}),
+          system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings)
+            + (agent.instructions ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}` : ""),
           messages: await convertToModelMessages(messages),
           abortSignal: request.signal,
-          providerOptions: foundryConfigured() ? { openai: { store: false } } : {
+          providerOptions: useFoundry ? { openai: { store: false } } : isOpenAI ? {
             openai: {
               forceReasoning: true,
               reasoningEffort: "medium",
@@ -94,7 +100,7 @@ export const Route = createFileRoute("/api/chat")({
               store: false,
               include: ["reasoning.encrypted_content"],
             },
-          },
+          } : {},
         });
 
         const response = result.toUIMessageStreamResponse({
