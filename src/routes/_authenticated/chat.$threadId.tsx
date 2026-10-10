@@ -19,6 +19,9 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import {
   PromptInput,
   PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuTrigger,
+  PromptInputActionMenuContent,
   usePromptInputAttachments,
   PromptInputBody,
   PromptInputFooter,
@@ -283,10 +286,12 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
           <PromptInputFooter className="justify-between">
             <div className="flex items-center gap-2">
               {/* زر إضافة الملفات والمرفقات */}
-              <PromptInputActionAddAttachments
-                label="إرفاق ملف أو صورة"
-                className="hover:bg-muted text-muted-foreground hover:text-foreground"
-              />
+              <PromptInputActionMenu>
+                <PromptInputActionMenuTrigger aria-label="إرفاق ملف أو صورة" />
+                <PromptInputActionMenuContent>
+                  <PromptInputActionAddAttachments label="إرفاق ملف أو صورة" />
+                </PromptInputActionMenuContent>
+              </PromptInputActionMenu>
               <span className="px-2 font-mono text-[11px] text-muted-foreground">gpt-6-astra</span>
             </div>
             <PromptInputSubmit status={busy ? "submitted" : status} onStop={stop} />
