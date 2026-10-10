@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Bot, CheckCircle2, CircleAlert, Loader2, Monitor, Moon, Palette, Save, Shield, Sun, UserRound, Wifi } from "lucide-react";
+import { ArrowRight, Bot, CheckCircle2, CircleAlert, Loader2, Monitor, Moon, Palette, Save, Shield, Sun, UserRound, Users, Wifi } from "lucide-react";
+import { AgentsManager } from "@/components/AgentsManager";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,13 @@ export const Route = createFileRoute("/_authenticated/settings")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => (typeof s["tab"] === "string" ? { tab: s["tab"] } : {}),
   component: SettingsPage,
 });
 
 function SettingsPage() {
   const { user } = Route.useRouteContext();
+  const { tab } = Route.useSearch();
   const { theme, setTheme } = useTheme();
   const checkConnection = useServerFn(testAgentConnection);
   const [name, setName] = useState<string>(typeof user.user_metadata["full_name"] === "string" ? user.user_metadata["full_name"] : "");
@@ -92,13 +95,18 @@ function SettingsPage() {
       <main className="mx-auto max-w-5xl px-5 py-9">
         <h1 className="text-3xl font-semibold">الإعدادات</h1>
         <nav className="mt-5 flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/github">GitHub</Link></Button><Button asChild variant="outline"><Link to="/frappe">Frappe / ERPNext</Link></Button></nav>
-        <Tabs defaultValue="account" dir="rtl" className="mt-8">
+        <Tabs defaultValue={tab ?? "account"} dir="rtl" className="mt-8">
           <TabsList className="mb-7 flex h-auto w-full flex-wrap justify-start gap-1 bg-muted p-1 sm:w-fit">
             <TabsTrigger value="account" className="gap-2"><UserRound className="size-4" /> الحساب</TabsTrigger>
             <TabsTrigger value="appearance" className="gap-2"><Palette className="size-4" /> المظهر</TabsTrigger>
             <TabsTrigger value="agent" className="gap-2"><Bot className="size-4" /> الوكيل</TabsTrigger>
+            <TabsTrigger value="agents" className="gap-2"><Users className="size-4" /> الوكلاء</TabsTrigger>
             <TabsTrigger value="security" className="gap-2"><Shield className="size-4" /> الأمان</TabsTrigger>
           </TabsList>
+          <TabsContent value="agents" className="max-w-2xl">
+            <h2 className="mb-4 text-xl font-semibold">الوكلاء المتعددون</h2>
+            <AgentsManager initial={user.user_metadata["agents"]} />
+          </TabsContent>
           <TabsContent value="account" className="max-w-2xl">
             <h2 className="mb-6 text-xl font-semibold">الملف الشخصي</h2>
             <div className="mb-7 flex items-center gap-4 border-b border-border pb-6">

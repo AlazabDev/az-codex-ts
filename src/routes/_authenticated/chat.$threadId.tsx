@@ -40,6 +40,8 @@ import {
 } from "@/components/ai-elements/attachments";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { AzLogo } from "@/components/AzLogo";
+import { AgentSwitcher } from "@/components/AgentSwitcher";
+import { parseAgents } from "@/lib/agents";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
   head: () => ({
@@ -80,6 +82,18 @@ const SUGGESTIONS = [
 function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessage[] }) {
   const qc = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
+  const { data: agents = parseAgents(undefined) } = useQuery({
+    queryKey: ["agents"],
+    queryFn: async () => parseAgents((await supabase.auth.getUser()).data.user?.user_metadata["agents"]),
+  });
+  const [picked, setPicked] = useState<string | null>(null);
+  const agentId = picked && agents.list.some((a) => a.id === picked) ? picked : agents.activeId;
+  const changeAgent = (id: string) => {
+    setPicked(id);
+    const next = { ...agents, activeId: id };
+    qc.setQueryData(["agents"], next);
+    void supabase.auth.updateUser({ data: { agents: next } });
+  };
 
   const transport = useMemo(
     () =>
@@ -177,7 +191,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
       sendMessage({
         text,
         files: uploadedParts,
-      });
+      }, { body: { agentId } });
     } catch (err: any) {
       toast.error(err.message || "حدث خطأ أثناء رفع المرفقات");
     } finally {
@@ -292,7 +306,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                   <PromptInputActionAddAttachments label="إرفاق ملف أو صورة" />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
-              <span className="px-2 font-mono text-[11px] text-muted-foreground">gpt-6-astra</span>
+              <AgentSwitcher agents={agents.list} activeId={agentId} onChange={changeAgent} />
             </div>
             <PromptInputSubmit status={busy ? "submitted" : status} onStop={stop} />
           </PromptInputFooter>
