@@ -36,6 +36,19 @@ export function AgentsManager({ initial }: { initial: unknown }) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">أنشئ وكلاء بأدوار ونماذج مختلفة، ثم بدّل بينهم من قائمة الوكيل أسفل مربع الكتابة في المحادثة.</p>
+      <details className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+        <summary className="cursor-pointer font-medium">توجيهات ربط Microsoft Foundry (حساب Entra وصلاحية Azure AI User)</summary>
+        <ol className="mt-3 list-decimal space-y-2 pe-1 ps-5 leading-relaxed">
+          <li>افتح <span dir="ltr" className="font-mono">portal.azure.com</span> ← Microsoft Entra ID ← App registrations ← New registration، وسمِّ التطبيق مثلاً <span dir="ltr" className="font-mono">az-codex</span>.</li>
+          <li>من صفحة «Overview» انسخ <b>Directory (tenant) ID</b> و<b>Application (client) ID</b>.</li>
+          <li>من «Certificates &amp; secrets» ← New client secret، أنشئ مفتاحاً وانسخ قيمته (Value) فوراً لأنها لا تظهر مرة أخرى.</li>
+          <li>افتح مورد <span dir="ltr" className="font-mono">az-ai-resource</span> ثم مشروع <span dir="ltr" className="font-mono">az-ai-gateway</span> ← Access control (IAM) ← Add role assignment.</li>
+          <li>اختر الدور <b>Azure AI User</b>، ثم Members ← User, group, or service principal، وابحث عن تطبيق <span dir="ltr" className="font-mono">az-codex</span> واحفظ.</li>
+          <li>انتظر بضع دقائق حتى تُفعَّل الصلاحية، وتأكد أن الوكيل <span dir="ltr" className="font-mono">az-agent-copilot</span> منشور في المشروع.</li>
+          <li>أدخل القيم الثلاث في إعدادات المشروع السرية بالأسماء: <span dir="ltr" className="font-mono">AZURE_TENANT_ID</span>، <span dir="ltr" className="font-mono">AZURE_CLIENT_ID</span>، <span dir="ltr" className="font-mono">AZURE_CLIENT_SECRET</span>. لا تلصقها في المحادثة.</li>
+          <li>اختر لوكيلك النموذج «Microsoft Foundry» واحفظ، ثم أرسل رسالة تجريبية. إن ظهر رفض (401/403) فالصلاحية لم تُفعَّل بعد أو أُسندت لمورد خاطئ.</li>
+        </ol>
+      </details>
       {config.list.map((a) => (
         <div key={a.id} className="space-y-4 rounded-lg border border-border p-4">
           <div className="flex items-center gap-3">
