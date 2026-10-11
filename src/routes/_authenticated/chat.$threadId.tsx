@@ -61,10 +61,10 @@ function ThreadPage() {
   const { threadId } = Route.useParams();
   const { data, isLoading, error } = useQuery(messagesQuery(threadId));
 
-  if (error) return <p className="m-auto text-destructive">تعذر تحميل المحادثة</p>;
+  if (error) return <p className="m-auto text-destructive animate-pulse">تعذر تحميل المحادثة</p>;
   if (isLoading || !data)
     return (
-      <div className="m-auto text-muted-foreground">
+      <div className="m-auto text-muted-foreground animate-pulse">
         <Shimmer>جاري التحميل...</Shimmer>
       </div>
     );
@@ -128,7 +128,6 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
     }
   }, [status]);
 
-  // رفع الملفات الحقيقية إلى مسار التخزين الخاص بالمستخدم
   const uploadFiles = async (files: FileUIPart[]): Promise<FileUIPart[]> => {
     if (!files.length) return [];
 
@@ -139,7 +138,6 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
     const uploaded: FileUIPart[] = [];
 
     for (const file of files) {
-      // استخراج الـ Blob من dataUrl أو blobUrl
       const res = await fetch(file.url);
       const blob = await res.blob();
       const safeName = (file.filename || "file").replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -157,10 +155,9 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         continue;
       }
 
-      // الحصول على رابط وصول موقع (Signed URL)
       const { data: signedData } = await supabase.storage
         .from("chat-attachments")
-        .createSignedUrl(uploadData.path, 60 * 60 * 24); // صالح لمدة 24 ساعة
+        .createSignedUrl(uploadData.path, 60 * 60 * 24);
 
       uploaded.push({
         type: "file",
@@ -200,92 +197,98 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <Conversation className="flex-1">
-        <ConversationContent className="mx-auto w-full max-w-3xl px-4 py-8">
+    <div className="flex h-full flex-col relative bg-gradient-to-br from-background via-background/95 to-background/80">
+      {/* Subtle background glow effect */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent opacity-50"></div>
+      
+      <Conversation className="flex-1 relative z-10">
+        <ConversationContent className="mx-auto w-full max-w-4xl px-4 py-8">
           {messages.length === 0 ? (
             <ConversationEmptyState
-              icon={<AzLogo size={48} />}
+              icon={<AzLogo size={56} className="text-primary animate-pulse" />}
               title="كيف أساعدك اليوم؟"
               description="وكيل AzCodex جاهز للتطوير والتشغيل وFrappe/ERPNext والمرفقات."
             >
-              <div className="flex flex-col items-center gap-4">
-                <AzLogo size={48} />
-                <div>
-                  <h2 className="text-xl font-semibold">كيف أساعدك اليوم؟</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    وكيل AzCodex جاهز للتطوير والتشغيل و Frappe / ERPNext.
+              <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
+                <AzLogo size={64} className="drop-shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-transform hover:scale-110" />
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">كيف أساعدك اليوم؟</h2>
+                  <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                    وكيل AzCodex جاهز للتطوير، مجهز بأدوات Frappe Bench، ومستعد للمساعدة في الشيفرات البرمجية.
                   </p>
                 </div>
-                <div className="mt-2 grid w-full max-w-xl gap-2 sm:grid-cols-2">
+                <div className="mt-4 grid w-full max-w-2xl gap-3 sm:grid-cols-2">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => handleSend({ text: s, files: [] })}
-                      className="rounded-lg border border-border bg-card/60 px-3 py-2.5 text-right text-sm text-card-foreground transition-colors hover:border-primary/60"
+                      className="group rounded-xl border border-white/10 bg-card/40 backdrop-blur-sm px-4 py-3 text-right text-sm text-card-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5"
                     >
-                      {s}
+                      <span className="bg-gradient-to-l from-foreground to-foreground/70 bg-clip-text group-hover:text-transparent transition-all">
+                        {s}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             </ConversationEmptyState>
           ) : (
-            messages.map((m) => (
-              <Message key={m.id} from={m.role}>
-                <MessageContent>
-                  {/* عرض المرفقات التابعة للرسالة */}
-                  {m.parts.some((p) => p.type === "file") && (
-                    <Attachments variant="list" className="mb-3">
-                      {m.parts
-                        .filter((p): p is FileUIPart => p.type === "file")
-                        .map((f, idx) => (
-                          <Attachment key={idx} data={{ ...f, id: `${m.id}-${idx}` }}>
-                            <AttachmentPreview />
-                            <AttachmentInfo />
-                            <AttachmentDownload />
-                          </Attachment>
-                        ))}
-                    </Attachments>
-                  )}
+            <div className="space-y-6">
+              {messages.map((m) => (
+                <Message key={m.id} from={m.role} className="animate-in slide-in-from-bottom-2 fade-in duration-300">
+                  <MessageContent className="leading-relaxed">
+                    {m.parts.some((p) => p.type === "file") && (
+                      <Attachments variant="list" className="mb-4">
+                        {m.parts
+                          .filter((p): p is FileUIPart => p.type === "file")
+                          .map((f, idx) => (
+                            <Attachment key={idx} data={{ ...f, id: `${m.id}-${idx}` }} className="rounded-lg border border-white/10 bg-card/30 backdrop-blur-sm shadow-sm transition-transform hover:scale-[1.01]">
+                              <AttachmentPreview />
+                              <AttachmentInfo />
+                              <AttachmentDownload />
+                            </Attachment>
+                          ))}
+                      </Attachments>
+                    )}
 
-                  {/* نصوص وتحليلات الرسالة */}
-                  {m.parts.map((part, i) => {
-                    if (part.type === "text")
-                      return m.role === "user" ? (
-                        <p key={i} className="whitespace-pre-wrap">{part.text}</p>
-                      ) : (
-                        <ChartedResponse key={i} text={part.text} isStreaming={part.state === "streaming"} />
-                      );
-                    if (part.type === "reasoning" && part.text)
-                      return (
-                        <Reasoning key={i} isStreaming={part.state === "streaming"} defaultOpen={false}>
-                          <ReasoningTrigger />
-                          <ReasoningContent>{part.text}</ReasoningContent>
-                        </Reasoning>
-                      );
-                    return null;
-                  })}
-                </MessageContent>
-              </Message>
-            ))
+                    {m.parts.map((part, i) => {
+                      if (part.type === "text")
+                        return m.role === "user" ? (
+                          <p key={i} className="whitespace-pre-wrap text-sm md:text-base">{part.text}</p>
+                        ) : (
+                          <ChartedResponse key={i} text={part.text} isStreaming={part.state === "streaming"} />
+                        );
+                      if (part.type === "reasoning" && part.text)
+                        return (
+                          <Reasoning key={i} isStreaming={part.state === "streaming"} defaultOpen={false}>
+                            <ReasoningTrigger className="hover:bg-primary/5 transition-colors rounded-md" />
+                            <ReasoningContent className="border-l-2 border-primary/30 pl-4 my-2">{part.text}</ReasoningContent>
+                          </Reasoning>
+                        );
+                      return null;
+                    })}
+                  </MessageContent>
+                </Message>
+              ))}
+            </div>
           )}
           {(status === "submitted" || isUploading) && (
-            <div className="text-sm text-muted-foreground">
-              <Shimmer>{isUploading ? "جاري معالجة ورفع الملفات..." : "AzCodex يفكر..."}</Shimmer>
+            <div className="text-sm text-muted-foreground mt-4 p-4 rounded-xl border border-white/5 bg-card/20 backdrop-blur-sm animate-pulse flex items-center justify-center">
+              <Shimmer className="font-medium tracking-wide">
+                {isUploading ? "جاري معالجة ورفع الملفات..." : "AzCodex يفكر..."}
+              </Shimmer>
             </div>
           )}
         </ConversationContent>
-        <ConversationScrollButton />
+        <ConversationScrollButton className="hover:scale-110 transition-transform shadow-lg" />
       </Conversation>
 
-      <div className="mx-auto w-full max-w-3xl px-4 pb-5">
+      <div className="mx-auto w-full max-w-4xl px-4 pb-6 pt-2 relative z-20">
         <PromptInput
-          maxFileSize={10 * 1024 * 1024} // 10 ميغابايت لكل ملف
+          maxFileSize={10 * 1024 * 1024}
           onSubmit={handleSend}
-          className="rounded-xl border-border bg-card shadow-glow"
+          className="rounded-2xl border border-white/15 bg-background/70 backdrop-blur-xl shadow-xl transition-all duration-300 focus-within:shadow-[0_0_30px_rgba(var(--primary),0.15)] focus-within:border-primary/30 focus-within:bg-background/80"
         >
-          {/* شريط معاينة المرفقات المحملة محلياً قبل الإرسال */}
           <PromptInputHeader>
             <PromptInputAttachments />
           </PromptInputHeader>
@@ -293,13 +296,13 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
           <PromptInputBody>
             <PromptInputTextarea
               autoFocus
-              placeholder="اكتب تعليماتك أو اسحب وأفلت الملفات هنا..."
+              placeholder="اكتب تعليماتك، اسأل عن الكود، أو اسحب وأفلت الملفات هنا..."
+              className="resize-none min-h-[60px] text-base"
             />
           </PromptInputBody>
 
-          <PromptInputFooter className="justify-between">
-            <div className="flex items-center gap-2">
-              {/* زر إضافة الملفات والمرفقات */}
+          <PromptInputFooter className="justify-between pt-2 border-t border-white/5">
+            <div className="flex items-center gap-3">
               <PromptInputActionMenu>
                 <PromptInputActionMenuTrigger aria-label="إرفاق ملف أو صورة" />
                 <PromptInputActionMenuContent>
@@ -307,8 +310,15 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
               <AgentSwitcher agents={agents.list} activeId={agentId} onChange={changeAgent} />
+              <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-[10px] font-medium tracking-wider text-primary">
+                AzCodex Agent
+              </span>
             </div>
-            <PromptInputSubmit status={busy ? "submitted" : status} onStop={stop} />
+            <PromptInputSubmit 
+              status={busy ? "submitted" : status} 
+              onStop={stop} 
+              className="rounded-full transition-transform hover:scale-105 active:scale-95"
+            />
           </PromptInputFooter>
         </PromptInput>
       </div>
@@ -326,7 +336,7 @@ function AttachmentDownload() {
       target="_blank"
       rel="noopener noreferrer"
       download={"filename" in data ? data.filename : undefined}
-      className="ms-auto text-xs font-medium text-primary hover:underline"
+      className="ms-auto text-xs font-semibold text-primary hover:text-primary/80 transition-colors hover:underline"
     >
       تنزيل
     </a>
@@ -337,12 +347,12 @@ function PromptInputAttachments() {
   const attachments = usePromptInputAttachments();
   if (!attachments.files.length) return null;
   return (
-    <Attachments variant="inline">
+    <Attachments variant="inline" className="p-2">
       {attachments.files.map((file) => (
-        <Attachment key={file.id} data={file} onRemove={() => attachments.remove(file.id)}>
+        <Attachment key={file.id} data={file} onRemove={() => attachments.remove(file.id)} className="rounded-lg bg-background/50 backdrop-blur-md border border-white/10 shadow-sm">
           <AttachmentPreview />
           <AttachmentInfo />
-          <AttachmentRemove />
+          <AttachmentRemove className="hover:bg-destructive/20 hover:text-destructive transition-colors" />
         </Attachment>
       ))}
     </Attachments>

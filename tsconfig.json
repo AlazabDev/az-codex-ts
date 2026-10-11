@@ -28,7 +28,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"]
     }
