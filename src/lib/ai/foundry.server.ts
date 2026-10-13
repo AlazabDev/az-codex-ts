@@ -2,7 +2,6 @@ import { createOpenAI } from "@ai-sdk/openai";
 
 // Microsoft Foundry agent (az-agent-copilot). Auth: Entra service principal (client credentials).
 export const FOUNDRY_ENDPOINT = "https://az-ai-resource.services.ai.azure.com/api/projects/az-ai-gateway";
-export const FOUNDRY_AGENT = { name: "az-agent-copilot", version: "5", type: "agent_reference" } as const;
 
 let cached: { token: string; exp: number } | undefined;
 
@@ -30,7 +29,9 @@ async function getToken() {
 }
 
 // Responses API provider that targets the Foundry agent instead of a raw model.
-export function foundryProvider() {
+export function foundryProvider(agentName: string, version?: string) {
+  if (!/^az-agent-[a-z0-9-]+$/.test(agentName)) throw new Error("Invalid Foundry agent name");
+  if (version && !/^[0-9]+$/.test(version)) throw new Error("Invalid Foundry agent version");
   return createOpenAI({
     baseURL: `${FOUNDRY_ENDPOINT}/openai/v1`,
     apiKey: "entra",
@@ -41,7 +42,7 @@ export function foundryProvider() {
       if (typeof body === "string") {
         const parsed = JSON.parse(body) as Record<string, unknown>;
         delete parsed["model"];
-        parsed["agent"] = FOUNDRY_AGENT;
+        parsed["agent"] = { name: agentName, ...(version ? { version } : {}), type: "agent_reference" };
         body = JSON.stringify(parsed);
       }
       const res = await fetch(input, { ...init, headers, body });
