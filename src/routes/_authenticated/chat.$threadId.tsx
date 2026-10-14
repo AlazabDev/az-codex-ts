@@ -2,7 +2,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type FileUIPart, type UIMessage } from "ai";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  type FileUIPart,
+  type UIMessage,
+} from "ai";
+import { Tool } from "@/components/ai-elements/tool";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,6 +85,16 @@ const SUGGESTIONS = [
   "اكتب DocType لإدارة طلبات الصيانة",
 ];
 
+const SLASH_COMMANDS = [
+  { cmd: "/repos", label: "اعرض مستودعات GitHub", prompt: "اعرض لي مستودعاتي على GitHub" },
+  { cmd: "/commits", label: "آخر الالتزامات في مستودع", prompt: "اعرض آخر الالتزامات في المستودع " },
+  { cmd: "/file", label: "اقرأ ملفاً من GitHub", prompt: "اقرأ الملف التالي من GitHub: " },
+  { cmd: "/frappe", label: "سجلات Frappe / ERPNext", prompt: "اعرض آخر سجلات Project من Frappe" },
+  { cmd: "/bench", label: "تنفيذ على البنش", prompt: "على البنش نفّذ: " },
+  { cmd: "/search", label: "بحث في الويب", prompt: "ابحث في الويب عن: " },
+  { cmd: "/summary", label: "لخّص المحادثة", prompt: "لخّص هذه المحادثة بالعربية واستخرج نقاط العمل" },
+];
+
 function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessage[] }) {
   const qc = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
@@ -109,16 +125,21 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
     [threadId],
   );
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const { messages, sendMessage, status, stop, addToolApprovalResponse } = useChat({
     id: threadId,
     messages: initial,
     transport,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
     onError: (e) => toast.error(e.message || "حدث خطأ أثناء الاتصال"),
     onFinish: ({ messages: all }) => {
       qc.setQueryData(messagesQuery(threadId).queryKey, all);
       qc.invalidateQueries({ queryKey: ["threads"] });
     },
   });
+  const [draft, setDraft] = useState("");
+  const slash = draft.startsWith("/") && !draft.includes(" ")
+    ? SLASH_COMMANDS.filter((c) => c.cmd.startsWith(draft))
+    : [];
 
   const busy = status === "submitted" || status === "streaming" || isUploading;
 
@@ -185,6 +206,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         toast.dismiss("upload");
       }
 
+      setDraft("");
       sendMessage({
         text,
         files: uploadedParts,
@@ -205,12 +227,12 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         <ConversationContent className="mx-auto w-full max-w-4xl px-4 py-8">
           {messages.length === 0 ? (
             <ConversationEmptyState
-              icon={<AzLogo size={56} className="text-primary animate-pulse" />}
+              icon={<span className="text-primary animate-pulse"><AzLogo size={56} /></span>}
               title="كيف أساعدك اليوم؟"
               description="وكيل AzCodex جاهز للتطوير والتشغيل وFrappe/ERPNext والمرفقات."
             >
               <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
-                <AzLogo size={64} className="drop-shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-transform hover:scale-110" />
+                <span className="transition-transform hover:scale-110"><AzLogo size={64} /></span>
                 <div className="text-center">
                   <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">كيف أساعدك اليوم؟</h2>
                   <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
@@ -265,6 +287,24 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                             <ReasoningContent className="border-l-2 border-primary/30 pl-4 my-2">{part.text}</ReasoningContent>
                           </Reasoning>
                         );
+                      if (part.type === "dynamic-tool" || part.type.startsWith("tool-")) {
+                        const t = part as unknown as {
+                          type: string; toolName?: string; state: string; input?: unknown;
+                          output?: unknown; errorText?: string; approval?: { id: string };
+                        };
+                        return (
+                          <Tool
+                            key={i}
+                            part={{
+                              name: t.toolName ?? t.type.replace(/^tool-/, ""),
+                              state: t.state, input: t.input, output: t.output,
+                              ...(t.errorText ? { errorText: t.errorText } : {}),
+                              ...(t.approval?.id ? { approvalId: t.approval.id } : {}),
+                            }}
+                            onApprove={(id, ok) => addToolApprovalResponse({ id, approved: ok })}
+                          />
+                        );
+                      }
                       return null;
                     })}
                   </MessageContent>
@@ -284,6 +324,24 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
       </Conversation>
 
       <div className="mx-auto w-full max-w-4xl px-4 pb-6 pt-2 relative z-20">
+        {slash.length > 0 && (
+          <div role="listbox" className="absolute bottom-full mb-2 w-[calc(100%-2rem)] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-lg">
+            {slash.map((c) => (
+              <button
+                key={c.cmd}
+                type="button"
+                onClick={() => {
+                  setDraft(c.prompt);
+                  document.querySelector<HTMLTextAreaElement>("textarea[name='message']")?.focus();
+                }}
+                className="flex w-full items-center gap-3 px-3 py-2 text-right text-sm hover:bg-accent"
+              >
+                <span dir="ltr" className="font-mono text-primary">{c.cmd}</span>
+                <span className="text-muted-foreground">{c.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <PromptInput
           maxFileSize={10 * 1024 * 1024}
           onSubmit={handleSend}
@@ -296,7 +354,9 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
           <PromptInputBody>
             <PromptInputTextarea
               autoFocus
-              placeholder="اكتب تعليماتك، اسأل عن الكود، أو اسحب وأفلت الملفات هنا..."
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="اكتب تعليماتك، أو / للأوامر السريعة، أو اسحب الملفات هنا..."
               className="resize-none min-h-[60px] text-base"
             />
           </PromptInputBody>
