@@ -40,8 +40,9 @@ export function benchTools() {
       },
     }),
     workspace_write_file: tool({
-      description: "اكتب/عدّل ملفاً داخل مساحات العمل (يحفظ نسخة .bak قبل التعديل).",
+      description: "اكتب/عدّل ملفاً داخل مساحات العمل (يحفظ نسخة .bak قبل التعديل). يتطلب موافقة المستخدم.",
       inputSchema: z.object({ path: z.string(), content: z.string(), workspace: z.enum(["bench", "codex"]).default("bench") }),
+      needsApproval: true,
       execute: async ({ path, content, workspace }) => {
         const fs = await import("node:fs/promises");
         const full = await safePath(path, workspace);
@@ -51,8 +52,9 @@ export function benchTools() {
       },
     }),
     workspace_run: tool({
-      description: "نفّذ أمراً داخل مساحة العمل (مثل bench migrate أو git status). الأوامر المدمرة محظورة.",
+      description: "نفّذ أمراً داخل مساحة العمل (مثل bench migrate أو git status). الأوامر المدمرة محظورة. يتطلب موافقة المستخدم.",
       inputSchema: z.object({ command: z.string().max(500), workspace: z.enum(["bench", "codex"]).default("bench") }),
+      needsApproval: true,
       execute: async ({ command, workspace }) => {
         if (BLOCKED.test(command)) return "مرفوض: أمر مدمّر لا يُنفذ تلقائياً.";
         const { exec } = await import("node:child_process");

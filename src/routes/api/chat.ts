@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { foundryConfigured, foundryProvider } from "@/lib/ai/foundry.server";
 import { benchTools, benchToolsEnabled } from "@/lib/ai/bench-tools.server";
+import { integrationTools } from "@/lib/ai/integration-tools.server";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { parseAgentSettings, agentPreferencePrompt } from "@/lib/agent-settings";
 import { AGENT_DOMAIN_KNOWLEDGE } from "@/lib/agent-knowledge";
@@ -87,7 +88,11 @@ export const Route = createFileRoute("/api/chat")({
           model: useFoundry
             ? foundryProvider().responses("az-agent-copilot")
             : isOpenAI ? provider.responses(modelId) : provider.chat(modelId),
-          ...(agent.benchTools && benchToolsEnabled() ? { tools: benchTools(), stopWhen: stepCountIs(15) } : {}),
+          tools: {
+            ...integrationTools(userId),
+            ...(agent.benchTools && benchToolsEnabled() ? benchTools() : {}),
+          },
+          stopWhen: stepCountIs(50),
           system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings)
             + (agent.instructions ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}` : ""),
           messages: await convertToModelMessages(messages),
