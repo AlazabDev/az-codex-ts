@@ -227,12 +227,12 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         <ConversationContent className="mx-auto w-full max-w-4xl px-4 py-8">
           {messages.length === 0 ? (
             <ConversationEmptyState
-              icon={<AzLogo size={56} className="text-primary animate-pulse" />}
+              icon={<span className="text-primary animate-pulse"><AzLogo size={56} /></span>}
               title="كيف أساعدك اليوم؟"
               description="وكيل AzCodex جاهز للتطوير والتشغيل وFrappe/ERPNext والمرفقات."
             >
               <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
-                <AzLogo size={64} className="drop-shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-transform hover:scale-110" />
+                <span className="transition-transform hover:scale-110"><AzLogo size={64} /></span>
                 <div className="text-center">
                   <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">كيف أساعدك اليوم؟</h2>
                   <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
