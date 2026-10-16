@@ -227,7 +227,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         <ConversationContent className="mx-auto w-full max-w-4xl px-4 py-8">
           {messages.length === 0 ? (
             <ConversationEmptyState
-              icon={<span className="text-primary animate-pulse"><AzLogo size={56} /></span>}
+              icon={<span className="text-brand-text animate-pulse"><AzLogo size={56} /></span>}
               title="كيف أساعدك اليوم؟"
               description="وكيل AzCodex جاهز للتطوير والتشغيل وFrappe/ERPNext والمرفقات."
             >
@@ -244,7 +244,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                     <button
                       key={s}
                       onClick={() => handleSend({ text: s, files: [] })}
-                      className="group rounded-xl border border-white/10 bg-card/40 backdrop-blur-sm px-4 py-3 text-right text-sm text-card-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5"
+                      className="group rounded-xl border border-border bg-card/40 backdrop-blur-sm px-4 py-3 text-right text-sm text-card-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5"
                     >
                       <span className="bg-gradient-to-l from-foreground to-foreground/70 bg-clip-text group-hover:text-transparent transition-all">
                         {s}
@@ -264,7 +264,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                         {m.parts
                           .filter((p): p is FileUIPart => p.type === "file")
                           .map((f, idx) => (
-                            <Attachment key={idx} data={{ ...f, id: `${m.id}-${idx}` }} className="rounded-lg border border-white/10 bg-card/30 backdrop-blur-sm shadow-sm transition-transform hover:scale-[1.01]">
+                            <Attachment key={idx} data={{ ...f, id: `${m.id}-${idx}` }} className="rounded-lg border border-border bg-card/30 backdrop-blur-sm shadow-sm transition-transform hover:scale-[1.01]">
                               <AttachmentPreview />
                               <AttachmentInfo />
                               <AttachmentDownload />
@@ -313,7 +313,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
             </div>
           )}
           {(status === "submitted" || isUploading) && (
-            <div className="text-sm text-muted-foreground mt-4 p-4 rounded-xl border border-white/5 bg-card/20 backdrop-blur-sm animate-pulse flex items-center justify-center">
+            <div className="text-sm text-muted-foreground mt-4 p-4 rounded-xl border border-border bg-card/20 backdrop-blur-sm animate-pulse flex items-center justify-center">
               <Shimmer className="font-medium tracking-wide">
                 {isUploading ? "جاري معالجة ورفع الملفات..." : "AzCodex يفكر..."}
               </Shimmer>
@@ -336,7 +336,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                 }}
                 className="flex w-full items-center gap-3 px-3 py-2 text-right text-sm hover:bg-accent"
               >
-                <span dir="ltr" className="font-mono text-primary">{c.cmd}</span>
+                <span dir="ltr" className="font-mono text-brand-text">{c.cmd}</span>
                 <span className="text-muted-foreground">{c.label}</span>
               </button>
             ))}
@@ -345,7 +345,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
         <PromptInput
           maxFileSize={10 * 1024 * 1024}
           onSubmit={handleSend}
-          className="rounded-2xl border border-white/15 bg-background/70 backdrop-blur-xl shadow-xl transition-all duration-300 focus-within:shadow-[0_0_30px_rgba(var(--primary),0.15)] focus-within:border-primary/30 focus-within:bg-background/80"
+          className="rounded-2xl border border-border bg-background/70 backdrop-blur-xl shadow-xl transition-all duration-300 focus-within:shadow-brand-focus focus-within:border-primary/30 focus-within:bg-background/80"
         >
           <PromptInputHeader>
             <PromptInputAttachments />
@@ -361,7 +361,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
             />
           </PromptInputBody>
 
-          <PromptInputFooter className="justify-between pt-2 border-t border-white/5">
+          <PromptInputFooter className="justify-between pt-2 border-t border-border">
             <div className="flex items-center gap-3">
               <PromptInputActionMenu>
                 <PromptInputActionMenuTrigger aria-label="إرفاق ملف أو صورة" />
@@ -370,7 +370,7 @@ function ChatWindow({ threadId, initial }: { threadId: string; initial: UIMessag
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
               <AgentSwitcher agents={agents.list} activeId={agentId} onChange={changeAgent} />
-              <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-[10px] font-medium tracking-wider text-primary">
+              <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-[10px] font-medium tracking-wider text-brand-text">
                 AzCodex Agent
               </span>
             </div>
@@ -396,7 +396,7 @@ function AttachmentDownload() {
       target="_blank"
       rel="noopener noreferrer"
       download={"filename" in data ? data.filename : undefined}
-      className="ms-auto text-xs font-semibold text-primary hover:text-primary/80 transition-colors hover:underline"
+      className="ms-auto text-xs font-semibold text-brand-text hover:text-brand-text/80 transition-colors hover:underline"
     >
       تنزيل
     </a>
@@ -409,7 +409,7 @@ function PromptInputAttachments() {
   return (
     <Attachments variant="inline" className="p-2">
       {attachments.files.map((file) => (
-        <Attachment key={file.id} data={file} onRemove={() => attachments.remove(file.id)} className="rounded-lg bg-background/50 backdrop-blur-md border border-white/10 shadow-sm">
+        <Attachment key={file.id} data={file} onRemove={() => attachments.remove(file.id)} className="rounded-lg bg-background/50 backdrop-blur-md border border-border shadow-sm">
           <AttachmentPreview />
           <AttachmentInfo />
           <AttachmentRemove className="hover:bg-destructive/20 hover:text-destructive transition-colors" />

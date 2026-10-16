@@ -26,7 +26,7 @@ export type ToolPartView = {
 
 const STATE: Record<string, { label: string; cls: string }> = {
   "input-streaming": { label: "يجهّز", cls: "text-muted-foreground" },
-  "input-available": { label: "يعمل", cls: "text-primary" },
+  "input-available": { label: "يعمل", cls: "text-brand-text" },
   "approval-requested": { label: "بانتظار موافقتك", cls: "text-chart-4" },
   "approval-responded": { label: "تم الرد", cls: "text-muted-foreground" },
   "output-available": { label: "اكتمل", cls: "text-chart-2" },

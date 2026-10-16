@@ -153,7 +153,7 @@ export function AccountLoginDialog({
               href={deviceResponse.verificationUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary underline underline-offset-4"
+              className="inline-flex items-center gap-1 text-sm text-brand-text underline underline-offset-4"
             >
               {deviceResponse.verificationUrl}
               <ExternalLink className="h-3.5 w-3.5" />

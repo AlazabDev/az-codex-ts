@@ -29,11 +29,11 @@ function Index() {
         </Button>
       </header>
       <main className="mx-auto flex max-w-3xl flex-1 flex-col items-center justify-center px-6 text-center">
-        <span className="mb-5 rounded-full border border-border px-3 py-1 font-mono text-xs text-primary">
+        <span className="mb-5 rounded-full border border-border px-3 py-1 font-mono text-xs text-brand-text">
           AI Engineering &amp; Operations Workspace
         </span>
         <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-          وكيلك الذكي لتطوير <span className="text-primary">وتشغيل</span> أنظمة العزب
+          وكيلك الذكي لتطوير <span className="text-brand-text">وتشغيل</span> أنظمة العزب
         </h1>
         <p className="mt-5 max-w-xl text-lg text-muted-foreground">
           محادثات متعددة، سياق محفوظ، وخبرة في Frappe و ERPNext و Git والبنية التحتية.
