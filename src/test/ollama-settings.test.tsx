@@ -68,6 +68,19 @@ describe("Ollama settings", () => {
     fireEvent.click(screen.getByRole("button", { name: "اختبار اتصال Ollama" }));
     await waitFor(() => expect(mocks.test).toHaveBeenCalledWith({ data: "ollama/qwen:8b" }));
     await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("نجح اختبار Ollama"));
+    expect(await screen.findByText("نجح اختبار Ollama")).toBeVisible();
+  });
+
+  it("keeps a failed generation diagnostic visible beside its model", async () => {
+    mocks.test.mockResolvedValueOnce({
+      ok: false,
+      code: "reasoning_only",
+      message: "الخدمة متصلة لكن الإجابة لم تكتمل",
+    });
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "اختبار اتصال Ollama" }));
+    expect(await screen.findByText("الخدمة متصلة لكن الإجابة لم تكتمل")).toBeVisible();
+    expect(mocks.error).toHaveBeenCalledWith("الخدمة متصلة لكن الإجابة لم تكتمل");
   });
 
   it("shows offline and empty-catalog states without deleting saved choices", async () => {

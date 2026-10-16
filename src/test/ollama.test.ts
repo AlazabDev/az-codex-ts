@@ -44,7 +44,8 @@ describe("Ollama model configuration", () => {
     vi.stubEnv("OLLAMA_API_KEY", "private-key");
     expect(ollamaConfig()).toEqual({
       baseURL: "https://models.example/ollama",
-      apiKey: "private-key",
+      headers: { Authorization: "Bearer private-key" },
+      authMode: "bearer",
     });
   });
 
@@ -91,7 +92,11 @@ describe("Ollama discovery and capabilities", () => {
       .fn()
       .mockResolvedValue(Response.json({ capabilities: ["completion", "tools", "vision"] }));
     vi.stubGlobal("fetch", fetchMock);
-    expect(await ollamaCapabilities("ollama/qwen:8b")).toEqual({ tools: true, vision: true });
+    expect(await ollamaCapabilities("ollama/qwen:8b")).toEqual({
+      tools: true,
+      vision: true,
+      thinking: false,
+    });
     expect(JSON.parse(fetchMock.mock.calls[0]![1].body)).toEqual({ model: "qwen:8b" });
   });
 
@@ -103,7 +108,11 @@ describe("Ollama discovery and capabilities", () => {
         .mockResolvedValueOnce(Response.json({}))
         .mockResolvedValueOnce(Response.json({ capabilities: ["embedding"] })),
     );
-    expect(await ollamaCapabilities("ollama/old:latest")).toEqual({ tools: false, vision: false });
+    expect(await ollamaCapabilities("ollama/old:latest")).toEqual({
+      tools: false,
+      vision: false,
+      thinking: false,
+    });
     await expect(ollamaCapabilities("ollama/embed:latest")).rejects.toThrow("لا يدعم المحادثة");
   });
 

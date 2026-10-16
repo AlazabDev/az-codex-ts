@@ -32,6 +32,9 @@ export function AgentsManager({ initial }: { initial: unknown }) {
   const [config, setConfig] = useState(() => parseAgents(initial));
   const [saving, setSaving] = useState(false);
   const [testingModel, setTestingModel] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, { ok: boolean; message: string }>>(
+    {},
+  );
   const ollama = useQuery({
     queryKey: ["ollama-models"],
     queryFn: () => getOllamaModels(),
@@ -42,12 +45,20 @@ export function AgentsManager({ initial }: { initial: unknown }) {
   async function testModel(model: AgentModel) {
     if (!model.startsWith("ollama/")) return;
     setTestingModel(model);
+    setTestResults((current) => {
+      const next = { ...current };
+      delete next[model];
+      return next;
+    });
     try {
       const result = await testOllamaConnection({ data: model as `ollama/${string}` });
+      setTestResults((current) => ({ ...current, [model]: result }));
       if (result.ok) toast.success(result.message);
       else toast.error(result.message);
     } catch {
-      toast.error("تعذر اختبار الاتصال؛ تحقق من جلستك وحاول مجددًا.");
+      const message = "تعذر اختبار الاتصال؛ تحقق من جلستك وحاول مجددًا.";
+      setTestResults((current) => ({ ...current, [model]: { ok: false, message } }));
+      toast.error(message);
     } finally {
       setTestingModel(null);
     }
@@ -265,15 +276,26 @@ export function AgentsManager({ initial }: { initial: unknown }) {
             </Select>
           </div>
           {a.model.startsWith("ollama/") && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={testingModel !== null}
-              onClick={() => void testModel(a.model)}
-            >
-              <PlugZap />
-              {testingModel === a.model ? "جارٍ اختبار النموذج…" : "اختبار اتصال Ollama"}
-            </Button>
+            <div className="space-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={testingModel !== null}
+                onClick={() => void testModel(a.model)}
+              >
+                <PlugZap />
+                {testingModel === a.model ? "جارٍ اختبار النموذج…" : "اختبار اتصال Ollama"}
+              </Button>
+              <p
+                role="status"
+                aria-live="polite"
+                className={`text-sm ${testResults[a.model]?.ok === false ? "text-destructive" : "text-muted-foreground"}`}
+              >
+                {testingModel === a.model
+                  ? "يجري اختبار توليد رد فعلي؛ قد يستغرق تحميل النموذج على المعالج عدة دقائق."
+                  : testResults[a.model]?.message}
+              </p>
+            </div>
           )}
           <div className="space-y-2">
             <Label>دور الوكيل وتعليماته</Label>

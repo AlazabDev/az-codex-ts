@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:ollama": "bun scripts/check-ollama.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
