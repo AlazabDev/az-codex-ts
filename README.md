@@ -24,3 +24,8 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Ollama
+
+The existing chat supports Ollama alongside Foundry and the current gateway models.
+See [Ollama setup and verification](docs/ollama.md) for server configuration and use.

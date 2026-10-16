@@ -1,6 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { createOpenAI } from "@ai-sdk/openai";
+import {
+  ollamaCapabilities,
+  ollamaChatModel,
+  ollamaErrorMessage,
+  validateOllamaAttachments,
+} from "@/lib/ai/ollama.server";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { foundryConfigured, foundryProvider } from "@/lib/ai/foundry.server";
 import { benchTools, benchToolsEnabled } from "@/lib/ai/bench-tools.server";
@@ -57,11 +63,18 @@ export const Route = createFileRoute("/api/chat")({
         const settings = parseAgentSettings(userData.user.user_metadata["agent_settings"]);
         if (!settings.enabled) return json(403, "اتصال الوكيل متوقف؛ فعّله من الإعدادات.");
 
-        const body = (await request.json()) as { messages?: UIMessage[]; threadId?: string; agentId?: string };
+        const body = (await request.json()) as {
+          messages?: UIMessage[];
+          threadId?: string;
+          agentId?: string;
+        };
         const messages = body.messages;
         const threadId = body.threadId;
         if (!Array.isArray(messages) || !threadId) return json(400, "طلب غير صالح");
-        const agent = resolveAgent(parseAgents(userData.user.user_metadata["agents"]), body.agentId);
+        const agent = resolveAgent(
+          parseAgents(userData.user.user_metadata["agents"]),
+          body.agentId,
+        );
 
         const { data: thread } = await supabase
           .from("threads")
@@ -70,42 +83,73 @@ export const Route = createFileRoute("/api/chat")({
           .maybeSingle();
         if (!thread) return json(404, "المحادثة غير موجودة");
 
+        const useOllama = agent.model.startsWith("ollama/");
+        const useFoundry = agent.model === "foundry" && foundryConfigured();
+        const useGateway = !useOllama && !useFoundry;
         const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) return json(500, "إعدادات الذكاء الاصطناعي غير مكتملة");
+        if (useGateway && !apiKey) return json(500, "إعدادات الذكاء الاصطناعي غير مكتملة");
 
         const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
-        const provider = createOpenAI({
-          baseURL: "https://ai.gateway.lovable.dev/v1",
-          apiKey,
-          headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-          fetch: runIdFetch.fetch,
-        });
+        const provider = useGateway
+          ? createOpenAI({
+              baseURL: "https://ai.gateway.lovable.dev/v1",
+              apiKey: apiKey!,
+              headers: { "Lovable-API-Key": apiKey!, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+              fetch: runIdFetch.fetch,
+            })
+          : undefined;
 
-        const useFoundry = agent.model === "foundry" && foundryConfigured();
+        let supportsTools = true;
+        if (useOllama) {
+          try {
+            const capabilities = await ollamaCapabilities(agent.model, request.signal);
+            supportsTools = capabilities.tools;
+            validateOllamaAttachments(messages, capabilities.vision);
+          } catch (error) {
+            return json(400, ollamaErrorMessage(error));
+          }
+        }
         const modelId = agent.model === "foundry" ? "openai/gpt-6-astra" : agent.model;
-        const isOpenAI = modelId.startsWith("openai/");
+        const isOpenAI = useGateway && modelId.startsWith("openai/");
         const result = streamText({
-          model: useFoundry
-            ? foundryProvider().responses("az-agent-copilot")
-            : isOpenAI ? provider.responses(modelId) : provider.chat(modelId),
-          tools: {
-            ...integrationTools(userId),
-            ...(agent.benchTools && benchToolsEnabled() ? benchTools() : {}),
-          },
+          model: useOllama
+            ? ollamaChatModel(agent.model)
+            : useFoundry
+              ? foundryProvider().responses("az-agent-copilot")
+              : isOpenAI
+                ? provider!.responses(modelId)
+                : provider!.chat(modelId),
+          tools: supportsTools
+            ? {
+                ...integrationTools(userId),
+                ...(agent.benchTools && benchToolsEnabled() ? benchTools() : {}),
+              }
+            : {},
           stopWhen: stepCountIs(50),
-          system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings)
-            + (agent.instructions ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}` : ""),
+          system:
+            SYSTEM +
+            "\n\n" +
+            AGENT_DOMAIN_KNOWLEDGE +
+            "\n\n" +
+            agentPreferencePrompt(settings) +
+            (agent.instructions
+              ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}`
+              : ""),
           messages: await convertToModelMessages(messages),
           abortSignal: request.signal,
-          providerOptions: useFoundry ? { openai: { store: false } } : isOpenAI ? {
-            openai: {
-              forceReasoning: true,
-              reasoningEffort: "medium",
-              reasoningSummary: "auto",
-              store: false,
-              include: ["reasoning.encrypted_content"],
-            },
-          } : {},
+          providerOptions: useFoundry
+            ? { openai: { store: false } }
+            : isOpenAI
+              ? {
+                  openai: {
+                    forceReasoning: true,
+                    reasoningEffort: "medium",
+                    reasoningSummary: "auto",
+                    store: false,
+                    include: ["reasoning.encrypted_content"],
+                  },
+                }
+              : {},
         });
 
         const response = result.toUIMessageStreamResponse({
@@ -113,6 +157,7 @@ export const Route = createFileRoute("/api/chat")({
           sendReasoning: true,
           onError: (err) => {
             console.error("chat error", err);
+            if (useOllama) return ollamaErrorMessage(err);
             const msg = String((err as Error)?.message ?? err);
             if (msg.includes("402")) return "نفد رصيد الذكاء الاصطناعي.";
             if (msg.includes("429")) return "تم تجاوز حد الطلبات، حاول بعد قليل.";
@@ -141,11 +186,14 @@ export const Route = createFileRoute("/api/chat")({
                 .trim();
               if (text) update.title = text.slice(0, 60);
             }
-            const { error: tErr } = await supabase.from("threads").update(update).eq("id", threadId);
+            const { error: tErr } = await supabase
+              .from("threads")
+              .update(update)
+              .eq("id", threadId);
             if (tErr) console.error("update thread failed", tErr);
           },
         });
-        return withLovableAiGatewayRunIdHeader(response, runIdFetch);
+        return useGateway ? withLovableAiGatewayRunIdHeader(response, runIdFetch) : response;
       },
     },
   },
