@@ -37,29 +37,31 @@ export const OLLAMA_BASE_URL = "https://ollama.alazab.com";
 export const OLLAMA_TEST_TIMEOUT_MS = 300_000;
 
 export function ollamaConfig() {
-  const baseURL = OLLAMA_BASE_URL;
-  const username = process.env["OLLAMA_AUTH_USER"];
-  const password = process.env["OLLAMA_AUTH_PASS"];
-  if (Boolean(username) !== Boolean(password) || username?.includes(":")) {
-    throw new OllamaError(
-      "configuration",
-      "إعداد مصادقة Ollama غير مكتمل؛ اضبط اسم المستخدم وكلمة المرور معًا دون نقطتين في اسم المستخدم.",
-    );
-  }
-  const headers: Record<string, string> = {};
-  // Match the existing Nginx auth_basic gateway. A complete Basic pair takes
-  // precedence over an optional Bearer key; never embed credentials in the URL.
-  if (username && password) {
-    headers["Authorization"] =
-      `Basic ${Buffer.from(`${username}:${password}`, "utf8").toString("base64")}`;
-  } else if (process.env["OLLAMA_API_KEY"]) {
-    headers["Authorization"] = `Bearer ${process.env["OLLAMA_API_KEY"]}`;
-  }
+  const projectURL = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  if (!projectURL || !key) throw new OllamaError(
+    "configuration",
+    "يلزم إعداد SUPABASE_URL وSUPABASE_SERVICE_ROLE_KEY على خادم AZ-Codex للوصول إلى Edge Function.",
+  );
+  const parsed = new URL(projectURL);
+  if (parsed.protocol !== "https:") throw new OllamaError("configuration", "Supabase URL must use HTTPS");
   return {
-    baseURL,
-    headers,
-    authMode: username ? "basic" : headers["Authorization"] ? "bearer" : "none",
+    baseURL: parsed.origin + "/functions/v1/ollama-proxy",
+    headers: { Authorization: `Bearer ${key}`, apikey: key },
+    authMode: "supabase-edge",
   };
+}
+
+async function ollamaProxyFetch(path: string, body?: unknown, signal?: AbortSignal): Promise<Response> {
+  const { baseURL, headers } = ollamaConfig();
+  const response = await fetch(baseURL, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ path, ...(body === undefined ? {} : { body }) }),
+    ...(signal ? { signal } : {}),
+    redirect: "error",
+  });
+  return response;
 }
 
 export function ollamaTestTimeoutMs() {
@@ -71,15 +73,10 @@ export function ollamaModelName(model: string) {
 }
 
 async function ollamaRequest(path: string, body?: unknown, signal?: AbortSignal) {
-  const { baseURL, headers } = ollamaConfig();
   const timeout = AbortSignal.timeout(15_000);
-  const response = await fetch(`${baseURL}${path}`, {
-    method: body === undefined ? "GET" : "POST",
-    headers: { ...headers, "Content-Type": "application/json" },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
-    redirect: "error",
-  });
+  const response = await ollamaProxyFetch(
+    path, body, signal ? AbortSignal.any([signal, timeout]) : timeout,
+  );
   if (!response.ok) throw upstreamError(response.status);
   return response.json();
 }
@@ -129,13 +126,15 @@ export function validateOllamaAttachments(messages: UIMessage[], vision: boolean
 }
 
 export function ollamaChatModel(model: string) {
-  const { baseURL, headers } = ollamaConfig();
   return createOpenAICompatible({
     name: "ollama",
-    baseURL: `${baseURL}/v1`,
-    headers,
+    baseURL: "https://ollama-proxy.invalid/v1",
     includeUsage: true,
-    fetch: (input, init) => fetch(input, { ...init, redirect: "error" }),
+    fetch: async (_input, init) => {
+      if (typeof init?.body !== "string") throw new OllamaError("configuration", "Missing chat request");
+      const payload = JSON.parse(init.body) as Record<string, unknown>;
+      return ollamaProxyFetch("/v1/chat/completions", payload, init.signal ?? undefined);
+    },
   }).chatModel(ollamaModelName(model));
 }
 
