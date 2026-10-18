@@ -1,9 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { createOpenAI } from "@ai-sdk/openai";
+import {
+  ollamaCapabilities,
+  ollamaChatModel,
+  ollamaErrorMessage,
+  validateOllamaAttachments,
+} from "@/lib/ai/ollama.server";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { foundryConfigured, foundryProvider } from "@/lib/ai/foundry.server";
 import { benchTools, benchToolsEnabled } from "@/lib/ai/bench-tools.server";
+import { integrationTools } from "@/lib/ai/integration-tools.server";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { parseAgentSettings, agentPreferencePrompt } from "@/lib/agent-settings";
 import { AGENT_DOMAIN_KNOWLEDGE } from "@/lib/agent-knowledge";
@@ -51,11 +58,18 @@ export const Route = createFileRoute("/api/chat")({
         const settings = parseAgentSettings(userData.user.user_metadata["agent_settings"]);
         if (!settings.enabled) return json(403, "اتصال الوكيل متوقف؛ فعّله من الإعدادات.");
 
-        const body = (await request.json()) as { messages?: UIMessage[]; threadId?: string; agentId?: string };
+        const body = (await request.json()) as {
+          messages?: UIMessage[];
+          threadId?: string;
+          agentId?: string;
+        };
         const messages = body.messages;
         const threadId = body.threadId;
         if (!Array.isArray(messages) || !threadId) return json(400, "طلب غير صالح");
-        const agent = resolveAgent(parseAgents(userData.user.user_metadata["agents"]), body.agentId);
+        const agent = resolveAgent(
+          parseAgents(userData.user.user_metadata["agents"]),
+          body.agentId,
+        );
 
         const { data: thread } = await supabase
           .from("threads")
@@ -106,6 +120,7 @@ export const Route = createFileRoute("/api/chat")({
           sendReasoning: true,
           onError: (err) => {
             console.error("chat error", err);
+            if (useOllama) return ollamaErrorMessage(err);
             const msg = String((err as Error)?.message ?? err);
             if (msg.includes("402")) return "نفد رصيد الذكاء الاصطناعي.";
             if (msg.includes("429")) return "تم تجاوز حد الطلبات، حاول بعد قليل.";
@@ -134,7 +149,10 @@ export const Route = createFileRoute("/api/chat")({
                 .trim();
               if (text) update.title = text.slice(0, 60);
             }
-            const { error: tErr } = await supabase.from("threads").update(update).eq("id", threadId);
+            const { error: tErr } = await supabase
+              .from("threads")
+              .update(update)
+              .eq("id", threadId);
             if (tErr) console.error("update thread failed", tErr);
           },
         });

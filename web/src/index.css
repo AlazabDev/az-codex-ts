@@ -90,6 +90,7 @@ body {
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-brand-text: var(--brand-text);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -106,41 +107,50 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════
-   LIGHT THEME — subtle blue-tinted OKLCH palette
+   LIGHT THEME — Alazab yellow, navy and neutral surfaces
    ══════════════════════════════════════════════════════ */
+
+/* Alazab identity — approved HEX equivalents are retained for reference. */
 :root {
-  --background: oklch(0.985 0.002 240);
-  --foreground: oklch(0.16 0.01 248);
-  --card: oklch(0.997 0.002 245);
-  --card-foreground: oklch(0.16 0.01 248);
-  --popover: oklch(0.997 0.002 245);
-  --popover-foreground: oklch(0.16 0.01 248);
-  --primary: oklch(0.22 0.03 255);
-  --primary-foreground: oklch(0.985 0.002 240);
-  --secondary: oklch(0.96 0.004 245);
-  --secondary-foreground: oklch(0.22 0.01 248);
-  --muted: oklch(0.96 0.004 245);
-  --muted-foreground: oklch(0.55 0.01 250);
-  --accent: oklch(0.96 0.004 245);
-  --accent-foreground: oklch(0.22 0.01 248);
+  --brand-yellow: oklch(0.8290172870 0.1712209793 81.0380713402); /* #ffb900 */
+  --brand-navy: oklch(0.2212950122 0.1329555511 265.9232701101); /* #030957 */
+  --brand-light: oklch(0.9791293496 0 0); /* #f8f8f8 */
+  --brand-white: oklch(1 0 0); /* #ffffff */
+}
+
+:root {
+  --background: var(--brand-light);
+  --foreground: var(--brand-navy);
+  --card: var(--brand-white);
+  --card-foreground: var(--foreground);
+  --popover: var(--brand-white);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand-yellow);
+  --primary-foreground: var(--brand-navy);
+  --secondary: color-mix(in oklch, var(--brand-white), var(--brand-navy) 6%);
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in oklch, var(--brand-white), var(--brand-navy) 4%);
+  --muted-foreground: color-mix(in oklch, var(--brand-navy), var(--brand-white) 30%);
+  --accent: color-mix(in oklch, var(--brand-white), var(--brand-yellow) 15%);
+  --accent-foreground: var(--foreground);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.90 0.008 246);
-  --input: oklch(0.90 0.008 246);
-  --ring: oklch(0.60 0.04 255);
-  --chart-1: oklch(0.87 0.01 245);
+  --border: color-mix(in oklch, var(--brand-white), var(--brand-navy) 20%);
+  --input: color-mix(in oklch, var(--brand-white), var(--brand-navy) 40%);
+  --ring: var(--brand-navy);
+  --chart-1: var(--brand-yellow);
   --chart-2: oklch(0.556 0.01 248);
   --chart-3: oklch(0.439 0.01 250);
   --chart-4: oklch(0.371 0.01 250);
   --chart-5: oklch(0.269 0.01 250);
   --radius: 0.875rem;
-  --sidebar: oklch(0.98 0.003 245);
-  --sidebar-foreground: oklch(0.16 0.01 248);
-  --sidebar-primary: oklch(0.22 0.03 255);
-  --sidebar-primary-foreground: oklch(0.985 0.002 240);
-  --sidebar-accent: oklch(0.96 0.004 245);
-  --sidebar-accent-foreground: oklch(0.22 0.01 248);
-  --sidebar-border: oklch(0.90 0.008 246);
-  --sidebar-ring: oklch(0.60 0.04 255);
+  --sidebar: var(--brand-light);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 
   /* ── Glass tokens (light) ─────────────────────────── */
   /* A white tint reads as "glass" only over a darker or coloured backdrop. This
@@ -172,57 +182,58 @@ body {
   --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
   --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.04);
   --glass-saturate: 180%;
+  --brand-text: var(--brand-navy);
 }
 
 /* ══════════════════════════════════════════════════════
-   DARK THEME — deeper blue-tinted palette
+   DARK THEME — Alazab navy surfaces with yellow accents
    ══════════════════════════════════════════════════════ */
 .dark {
-  --background: oklch(0.14 0.01 250);
-  --foreground: oklch(0.95 0.01 247);
-  --card: oklch(0.20 0.012 250);
-  --card-foreground: oklch(0.95 0.01 247);
-  --popover: oklch(0.20 0.012 250);
-  --popover-foreground: oklch(0.95 0.01 247);
-  --primary: oklch(0.80 0.06 255);
-  --primary-foreground: oklch(0.14 0.01 250);
-  --secondary: oklch(0.26 0.012 250);
-  --secondary-foreground: oklch(0.95 0.01 247);
-  --muted: oklch(0.26 0.012 250);
-  --muted-foreground: oklch(0.68 0.015 250);
-  --accent: oklch(0.26 0.012 250);
-  --accent-foreground: oklch(0.95 0.01 247);
+  --background: var(--brand-navy);
+  --foreground: var(--brand-light);
+  --card: var(--brand-navy);
+  --card-foreground: var(--foreground);
+  --popover: var(--brand-navy);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand-yellow);
+  --primary-foreground: var(--brand-navy);
+  --secondary: color-mix(in oklch, var(--brand-navy), var(--brand-white) 10%);
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in oklch, var(--brand-navy), var(--brand-white) 8%);
+  --muted-foreground: color-mix(in oklch, var(--brand-navy), var(--brand-white) 72%);
+  --accent: color-mix(in oklch, var(--brand-navy), var(--brand-yellow) 12%);
+  --accent-foreground: var(--foreground);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.60 0.06 255);
-  --chart-1: oklch(0.87 0.01 250);
+  --border: color-mix(in oklch, var(--brand-navy), var(--brand-white) 25%);
+  --input: color-mix(in oklch, var(--brand-navy), var(--brand-white) 38%);
+  --ring: var(--brand-yellow);
+  --chart-1: var(--brand-yellow);
   --chart-2: oklch(0.556 0.015 250);
   --chart-3: oklch(0.439 0.015 250);
   --chart-4: oklch(0.371 0.015 250);
   --chart-5: oklch(0.269 0.015 250);
-  --sidebar: oklch(0.18 0.012 250);
-  --sidebar-foreground: oklch(0.95 0.01 247);
-  --sidebar-primary: oklch(0.70 0.12 260);
-  --sidebar-primary-foreground: oklch(0.95 0.01 247);
-  --sidebar-accent: oklch(0.26 0.012 250);
-  --sidebar-accent-foreground: oklch(0.95 0.01 247);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.60 0.06 255);
+  --sidebar: var(--brand-navy);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 
   /* ── Glass tokens (dark) ──────────────────────────── */
-  --glass-1-surface: rgba(255, 255, 255, 0.04);
+  --glass-1-surface: color-mix(in oklch, var(--brand-navy) 96%, transparent);
   --glass-1-blur: 8px;
-  --glass-2-surface: rgba(255, 255, 255, 0.06);
+  --glass-2-surface: color-mix(in oklch, var(--brand-navy) 96%, transparent);
   --glass-2-blur: 12px;
-  --glass-3-surface: rgba(255, 255, 255, 0.08);
+  --glass-3-surface: color-mix(in oklch, var(--brand-navy) 96%, transparent);
   --glass-3-blur: 16px;
-  --glass-4-surface: rgba(255, 255, 255, 0.12);
+  --glass-4-surface: color-mix(in oklch, var(--brand-navy) 96%, transparent);
   --glass-4-blur: 24px;
-  --glass-5-surface: rgba(255, 255, 255, 0.16);
+  --glass-5-surface: color-mix(in oklch, var(--brand-navy) 96%, transparent);
   --glass-5-blur: 40px;
-  /* Scrim and surface both darken here, so the plain glass tint already reads
-     correctly and modals need no special case. */
+  /* Navy glass preserves the same dark identity as the page and cards.
+     Borders, blur and shadows distinguish overlays without grey-white fills. */
   --glass-modal-surface: var(--glass-5-surface);
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-border-subtle: rgba(255, 255, 255, 0.06);
@@ -232,6 +243,7 @@ body {
   --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.10), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
   --glass-refraction-top: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.20), transparent);
   --glass-saturate: 200%;
+  --brand-text: var(--brand-yellow);
 }
 
 @layer base {

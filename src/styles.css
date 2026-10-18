@@ -33,6 +33,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-brand-text: var(--brand-text);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -59,74 +60,86 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --shadow-brand-focus: 0 0 30px color-mix(in oklch, var(--brand-yellow) 15%, transparent);
+}
+
+/* Alazab identity — approved HEX equivalents are retained for reference. */
+:root {
+  --brand-yellow: oklch(0.8290172870 0.1712209793 81.0380713402); /* #ffb900 */
+  --brand-navy: oklch(0.2212950122 0.1329555511 265.9232701101); /* #030957 */
+  --brand-light: oklch(0.9791293496 0 0); /* #f8f8f8 */
+  --brand-white: oklch(1 0 0); /* #ffffff */
 }
 
 :root, .dark {
   --radius: 0.75rem;
-  --background: oklch(0.17 0.012 250);
-  --foreground: oklch(0.94 0.008 80);
-  --card: oklch(0.21 0.014 250);
-  --card-foreground: oklch(0.94 0.008 80);
-  --popover: oklch(0.22 0.014 250);
-  --popover-foreground: oklch(0.94 0.008 80);
-  --primary: oklch(0.76 0.15 62);
-  --primary-foreground: oklch(0.18 0.02 60);
-  --secondary: oklch(0.25 0.015 250);
-  --secondary-foreground: oklch(0.92 0.01 80);
-  --muted: oklch(0.24 0.012 250);
-  --muted-foreground: oklch(0.66 0.015 250);
-  --accent: oklch(0.27 0.02 250);
-  --accent-foreground: oklch(0.94 0.008 80);
+  --background: var(--brand-navy);
+  --foreground: var(--brand-light);
+  --card: var(--brand-navy);
+  --card-foreground: var(--foreground);
+  --popover: var(--brand-navy);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand-yellow);
+  --primary-foreground: var(--brand-navy);
+  --secondary: color-mix(in oklch, var(--brand-navy), var(--brand-white) 10%);
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in oklch, var(--brand-navy), var(--brand-white) 8%);
+  --muted-foreground: color-mix(in oklch, var(--brand-navy), var(--brand-white) 72%);
+  --accent: color-mix(in oklch, var(--brand-navy), var(--brand-yellow) 12%);
+  --accent-foreground: var(--foreground);
   --destructive: oklch(0.64 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.3 0.014 250);
-  --input: oklch(0.32 0.014 250);
-  --ring: oklch(0.76 0.15 62);
-  --chart-1: oklch(0.76 0.15 62);
+  --border: color-mix(in oklch, var(--brand-navy), var(--brand-white) 25%);
+  --input: color-mix(in oklch, var(--brand-navy), var(--brand-white) 38%);
+  --ring: var(--brand-yellow);
+  --chart-1: var(--brand-yellow);
   --chart-2: oklch(0.7 0.12 180);
   --chart-3: oklch(0.6 0.1 250);
   --chart-4: oklch(0.8 0.15 90);
   --chart-5: oklch(0.65 0.18 30);
-  --sidebar: oklch(0.145 0.012 250);
-  --sidebar-foreground: oklch(0.9 0.008 80);
-  --sidebar-primary: oklch(0.76 0.15 62);
-  --sidebar-primary-foreground: oklch(0.18 0.02 60);
-  --sidebar-accent: oklch(0.22 0.014 250);
-  --sidebar-accent-foreground: oklch(0.95 0.008 80);
-  --sidebar-border: oklch(0.26 0.014 250);
-  --sidebar-ring: oklch(0.76 0.15 62);
-  --grid-line: oklch(0.76 0.15 62 / 0.06);
-  --glow: 0 0 0 1px oklch(0.76 0.15 62 / 0.25), 0 10px 40px -10px oklch(0.76 0.15 62 / 0.35);
-}
-
-:root:not(.dark) {
-  --background: oklch(0.985 0.003 250);
-  --foreground: oklch(0.24 0.012 250);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--foreground);
-  --popover: var(--card);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.55 0.13 62);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.94 0.008 250);
-  --secondary-foreground: var(--foreground);
-  --muted: oklch(0.95 0.006 250);
-  --muted-foreground: oklch(0.48 0.015 250);
-  --accent: oklch(0.93 0.012 250);
-  --accent-foreground: var(--foreground);
-  --border: oklch(0.87 0.009 250);
-  --input: oklch(0.82 0.01 250);
-  --ring: var(--primary);
-  --sidebar: oklch(0.96 0.006 250);
+  --sidebar: var(--brand-navy);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.91 0.01 250);
+  --sidebar-accent: var(--accent);
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--border);
-  --sidebar-ring: var(--primary);
-  --grid-line: oklch(0.55 0.13 62 / 0.05);
-  --glow: 0 0 0 1px oklch(0.55 0.13 62 / 0.1), 0 10px 30px -10px oklch(0.3 0.01 250 / 0.1);
+  --sidebar-ring: var(--ring);
+  --grid-line: color-mix(in oklch, var(--brand-yellow) 6%, transparent);
+  --glow: 0 0 0 1px color-mix(in oklch, var(--brand-yellow) 25%, transparent), 0 10px 40px -10px color-mix(in oklch, var(--brand-yellow) 35%, transparent);
+  --brand-text: var(--brand-yellow);
+}
+
+:root:not(.dark) {
+  --background: var(--brand-light);
+  --foreground: var(--brand-navy);
+  --card: var(--brand-white);
+  --card-foreground: var(--foreground);
+  --popover: var(--brand-white);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand-yellow);
+  --primary-foreground: var(--brand-navy);
+  --secondary: color-mix(in oklch, var(--brand-white), var(--brand-navy) 6%);
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in oklch, var(--brand-white), var(--brand-navy) 4%);
+  --muted-foreground: color-mix(in oklch, var(--brand-navy), var(--brand-white) 30%);
+  --accent: color-mix(in oklch, var(--brand-white), var(--brand-yellow) 15%);
+  --accent-foreground: var(--foreground);
+  --border: color-mix(in oklch, var(--brand-white), var(--brand-navy) 20%);
+  --input: color-mix(in oklch, var(--brand-white), var(--brand-navy) 40%);
+  --ring: var(--brand-navy);
+  --sidebar: var(--brand-light);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --grid-line: color-mix(in oklch, var(--brand-yellow) 5%, transparent);
+  --glow: 0 0 0 1px color-mix(in oklch, var(--brand-yellow) 10%, transparent), 0 10px 30px -10px color-mix(in oklch, var(--brand-navy) 10%, transparent);
+  --brand-text: var(--brand-navy);
+  --chart-1: var(--brand-yellow);
 }
 
 @layer base {

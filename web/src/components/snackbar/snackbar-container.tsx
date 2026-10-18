@@ -75,7 +75,7 @@ function SnackbarToast({ item }: { item: SnackbarItem }) {
         {item.action && (
           <button
             type="button"
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-brand-text hover:underline"
             onClick={() => {
               item.action?.onClick();
               dismiss(item.id);

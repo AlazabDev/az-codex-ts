@@ -110,7 +110,7 @@ function SettingsPage() {
           <TabsContent value="account" className="max-w-2xl">
             <h2 className="mb-6 text-xl font-semibold">الملف الشخصي</h2>
             <div className="mb-7 flex items-center gap-4 border-b border-border pb-6">
-              <div className="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10 text-xl font-semibold text-primary">{(name || user.email || "A").slice(0, 1).toUpperCase()}</div>
+              <div className="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10 text-xl font-semibold text-brand-text">{(name || user.email || "A").slice(0, 1).toUpperCase()}</div>
               <div className="min-w-0"><p className="break-words font-medium">{name || "حسابي"}</p><p dir="ltr" className="break-all text-sm text-muted-foreground">{user.email}</p></div>
             </div>
             <form onSubmit={saveAccount} className="space-y-5">
@@ -123,7 +123,7 @@ function SettingsPage() {
             <h2 className="mb-6 text-xl font-semibold">مظهر التطبيق</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" role="group" aria-label="مظهر التطبيق">
               {([{ value: "light", label: "نهاري", icon: Sun }, { value: "dark", label: "ليلي", icon: Moon }, { value: "system", label: "تلقائي", icon: Monitor }] as const).map((option) => (
-                <Button key={option.value} variant="outline" aria-pressed={theme === option.value} onClick={() => setTheme(option.value)} className={`h-28 flex-col gap-3 ${theme === option.value ? "border-primary bg-primary/10 text-primary" : ""}`}><option.icon className="size-6" />{option.label}</Button>
+                <Button key={option.value} variant="outline" aria-pressed={theme === option.value} onClick={() => setTheme(option.value)} className={`h-28 flex-col gap-3 ${theme === option.value ? "border-primary bg-primary/10 text-brand-text" : ""}`}><option.icon className="size-6" />{option.label}</Button>
               ))}
             </div>
           </TabsContent>
@@ -133,7 +133,7 @@ function SettingsPage() {
               <div><p className="font-medium">Lovable AI</p><p className="mt-1 font-mono text-sm text-muted-foreground">gpt-6-astra</p></div>
               <Button variant="outline" onClick={testConnection} disabled={checking}>{checking ? <Loader2 className="animate-spin" /> : <Wifi />}{checking ? "جارٍ الاتصال…" : "اختبار الاتصال"}</Button>
             </div>
-            <div aria-live="polite">{connection && <p className={`mb-6 flex items-start gap-2 text-sm ${connection.ok ? "text-primary" : "text-destructive"}`}>{connection.ok ? <CheckCircle2 className="size-4 shrink-0" /> : <CircleAlert className="size-4 shrink-0" />}{connection.message}</p>}</div>
+            <div aria-live="polite">{connection && <p className={`mb-6 flex items-start gap-2 text-sm ${connection.ok ? "text-brand-text" : "text-destructive"}`}>{connection.ok ? <CheckCircle2 className="size-4 shrink-0" /> : <CircleAlert className="size-4 shrink-0" />}{connection.message}</p>}</div>
             <form onSubmit={saveAgent} className="space-y-6">
               <div className="flex items-center justify-between gap-4"><Label htmlFor="agent-enabled">تفعيل اتصال الوكيل</Label><Switch id="agent-enabled" checked={settings.enabled} onCheckedChange={(enabled) => patchSettings({ enabled })} /></div>
               <div className="space-y-2"><Label htmlFor="agent-language">لغة الردود</Label><Select dir="rtl" value={settings.language} onValueChange={(value) => patchSettings({ language: value as AgentSettings["language"] })}><SelectTrigger id="agent-language"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="auto">لغة المحادثة</SelectItem><SelectItem value="ar">العربية</SelectItem><SelectItem value="en">English</SelectItem></SelectContent></Select></div>

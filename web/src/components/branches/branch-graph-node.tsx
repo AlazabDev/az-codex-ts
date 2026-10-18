@@ -169,7 +169,7 @@ export function BranchGraphNode({ data }: NodeProps) {
           </span>
         )}
         {node.isCurrent && (
-          <span className="rounded bg-primary/15 px-1 py-px text-primary">
+          <span className="rounded bg-primary/15 px-1 py-px text-brand-text">
             {t('Open')}
           </span>
         )}

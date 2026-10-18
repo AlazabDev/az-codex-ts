@@ -41,6 +41,399 @@ export type Database = {
         }
         Relationships: []
       }
+      az_agent_profiles: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          instructions: string
+          model_ref_id: string | null
+          name: string
+          owner_id: string
+          provider: string
+          settings: Json
+          slug: string
+          target: string
+          tools: string[]
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          instructions?: string
+          model_ref_id?: string | null
+          name: string
+          owner_id: string
+          provider: string
+          settings?: Json
+          slug: string
+          target?: string
+          tools?: string[]
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          instructions?: string
+          model_ref_id?: string | null
+          name?: string
+          owner_id?: string
+          provider?: string
+          settings?: Json
+          slug?: string
+          target?: string
+          tools?: string[]
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "az_agent_profiles_connection_owner_fk"
+            columns: ["connection_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_provider_connections"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "az_agent_profiles_model_owner_fk"
+            columns: ["model_ref_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_provider_models"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      az_agent_tool_bindings: {
+        Row: {
+          agent_id: string
+          config: Json
+          created_at: string
+          enabled: boolean
+          owner_id: string
+          tool_id: string
+        }
+        Insert: {
+          agent_id: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          owner_id: string
+          tool_id: string
+        }
+        Update: {
+          agent_id?: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          owner_id?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "az_agent_tool_bindings_agent_id_owner_id_fkey"
+            columns: ["agent_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_agent_profiles"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "az_agent_tool_bindings_tool_id_owner_id_fkey"
+            columns: ["tool_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_tool_registry"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      az_execution_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: number
+          owner_id: string
+          payload: Json
+          run_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: never
+          owner_id: string
+          payload?: Json
+          run_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: never
+          owner_id?: string
+          payload?: Json
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "az_execution_events_run_id_owner_id_fkey"
+            columns: ["run_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_execution_runs"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      az_execution_runs: {
+        Row: {
+          agent_id: string | null
+          connection_id: string | null
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          metadata: Json
+          model_id: string | null
+          owner_id: string
+          provider: string
+          started_at: string
+          status: string
+          thread_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          connection_id?: string | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json
+          model_id?: string | null
+          owner_id: string
+          provider: string
+          started_at?: string
+          status?: string
+          thread_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          connection_id?: string | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json
+          model_id?: string | null
+          owner_id?: string
+          provider?: string
+          started_at?: string
+          status?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "az_execution_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "az_agent_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "az_execution_runs_agent_owner_fk"
+            columns: ["agent_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_agent_profiles"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "az_execution_runs_connection_owner_fk"
+            columns: ["connection_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_provider_connections"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "az_execution_runs_thread_owner_fk"
+            columns: ["thread_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      az_provider_connections: {
+        Row: {
+          auth_method: string
+          created_at: string
+          credential_ref: string | null
+          display_name: string
+          enabled: boolean
+          endpoint: string | null
+          id: string
+          owner_id: string
+          provider: string
+          settings: Json
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          auth_method?: string
+          created_at?: string
+          credential_ref?: string | null
+          display_name: string
+          enabled?: boolean
+          endpoint?: string | null
+          id?: string
+          owner_id: string
+          provider: string
+          settings?: Json
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          auth_method?: string
+          created_at?: string
+          credential_ref?: string | null
+          display_name?: string
+          enabled?: boolean
+          endpoint?: string | null
+          id?: string
+          owner_id?: string
+          provider?: string
+          settings?: Json
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      az_provider_models: {
+        Row: {
+          capabilities: Json
+          connection_id: string
+          discovered_at: string | null
+          display_name: string | null
+          enabled: boolean
+          id: string
+          model_id: string
+          owner_id: string
+        }
+        Insert: {
+          capabilities?: Json
+          connection_id: string
+          discovered_at?: string | null
+          display_name?: string | null
+          enabled?: boolean
+          id?: string
+          model_id: string
+          owner_id: string
+        }
+        Update: {
+          capabilities?: Json
+          connection_id?: string
+          discovered_at?: string | null
+          display_name?: string | null
+          enabled?: boolean
+          id?: string
+          model_id?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "az_provider_models_connection_id_owner_id_fkey"
+            columns: ["connection_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_provider_connections"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      az_tool_calls: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          result: Json | null
+          run_id: string
+          status: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          result?: Json | null
+          run_id: string
+          status?: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          result?: Json | null
+          run_id?: string
+          status?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "az_tool_calls_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "az_execution_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "az_tool_calls_run_owner_fk"
+            columns: ["run_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "az_execution_runs"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      az_tool_registry: {
+        Row: {
+          config: Json
+          created_at: string
+          display_name: string
+          enabled: boolean
+          endpoint: string | null
+          id: string
+          kind: string
+          owner_id: string
+          slug: string
+          transport: string | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          display_name: string
+          enabled?: boolean
+          endpoint?: string | null
+          id?: string
+          kind: string
+          owner_id: string
+          slug: string
+          transport?: string | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          display_name?: string
+          enabled?: boolean
+          endpoint?: string | null
+          id?: string
+          kind?: string
+          owner_id?: string
+          slug?: string
+          transport?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string
@@ -76,6 +469,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "threads"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_thread_owner_fk"
+            columns: ["thread_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -117,6 +517,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "threads"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thread_attachments_thread_owner_fk"
+            columns: ["thread_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
