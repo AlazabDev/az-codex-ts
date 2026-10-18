@@ -82,7 +82,7 @@ export function GoalProgressRow({ threadId, readOnly }: Props) {
       <Target
         className={cn(
           'h-3.5 w-3.5 shrink-0',
-          terminal ? 'text-muted-foreground' : 'text-primary',
+          terminal ? 'text-muted-foreground' : 'text-brand-text',
         )}
       />
 

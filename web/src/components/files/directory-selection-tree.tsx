@@ -267,7 +267,7 @@ function DirectoryNode({ path, name, depth, ...childProps }: DirectoryNodeProps)
         <div
           className={cn(
             'flex items-center gap-1 py-1 text-xs hover:bg-accent/50',
-            selectedPath === path && 'bg-primary/10 text-primary',
+            selectedPath === path && 'bg-primary/10 text-brand-text',
           )}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
           role="button"

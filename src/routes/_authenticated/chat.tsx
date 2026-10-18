@@ -144,7 +144,7 @@ function ChatLayout() {
                 params={{ threadId: t.id }}
                 className="flex min-w-0 flex-1 items-center gap-1.5"
               >
-                {t.pinned && <Pin className="size-3 shrink-0 text-primary" />}
+                {t.pinned && <Pin className="size-3 shrink-0 text-brand-text" />}
                 <span className="truncate">{t.title}</span>
               </Link>
               )}

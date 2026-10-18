@@ -34,7 +34,7 @@ export function PlanModeBadge({ state, pending, disabled, onToggle }: Props) {
       variant="secondary"
       className={cn(
         'h-7 gap-1.5 rounded-lg px-2.5 text-xs',
-        planActive && 'text-primary',
+        planActive && 'text-brand-text',
       )}
       disabled={disabled || pending}
       onClick={onToggle}
