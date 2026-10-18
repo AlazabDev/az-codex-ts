@@ -1,3 +1,8 @@
+# Current review
+- [ ] Audit chat and workspace execution boundaries and repair confirmed issues.
+- [ ] Expand multi-agent settings with Foundry targets and per-agent connection checks.
+- [ ] Run regression tests and verify available public flows; report live-service blockers.
+
 # Settings
 - [x] Add account, appearance, and agent settings page.
 - [x] Wire saved agent preferences and real connection check.
