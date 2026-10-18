@@ -15,11 +15,6 @@ import type { Database, Json } from "@/integrations/supabase/types";
 import { parseAgentSettings, agentPreferencePrompt } from "@/lib/agent-settings";
 import { AGENT_DOMAIN_KNOWLEDGE } from "@/lib/agent-knowledge";
 import { parseAgents, resolveAgent } from "@/lib/agents";
-import {
-  createLovableAiGatewayRunIdFetch,
-  getLovableAiGatewayRunId,
-  withLovableAiGatewayRunIdHeader,
-} from "@/lib/ai/run-id.server";
 
 const SYSTEM = `أنت AzCodex، وكيل هندسة وتشغيل ذكي لمجموعة العزب (Alazab Group).
 تساعد في تطوير البرمجيات، Frappe و ERPNext، Git، البنية التحتية، والتشخيص.
@@ -83,73 +78,41 @@ export const Route = createFileRoute("/api/chat")({
           .maybeSingle();
         if (!thread) return json(404, "المحادثة غير موجودة");
 
-        const useOllama = agent.model.startsWith("ollama/");
-        const useFoundry = agent.model === "foundry" && foundryConfigured();
-        const useGateway = !useOllama && !useFoundry;
-        const apiKey = process.env["LOVABLE_API_KEY"];
-        if (useGateway && !apiKey) return json(500, "إعدادات الذكاء الاصطناعي غير مكتملة");
+        // Route directly to the selected provider; never silently fall back.
+        const isFoundry = agent.model === "foundry";
+        const isOpenAI = agent.model.startsWith("openai/");
+        const isGemini = agent.model.startsWith("google/");
+        if (isFoundry && !foundryConfigured()) return json(503, "Foundry credentials are not configured");
+        if (isOpenAI && !process.env["OPENAI_API_KEY"]) return json(503, "OpenAI credentials are not configured");
+        if (isGemini && !process.env["GEMINI_API_KEY"]) return json(503, "Gemini credentials are not configured");
+        const model = isFoundry
+          ? foundryProvider(agent.foundryAgent ?? (agent.id === "azcodex" ? "az-agent-sol" : `az-agent-${agent.id}`), agent.foundryVersion).responses("foundry-agent")
+          : isOpenAI
+            ? createOpenAI({ apiKey: process.env["OPENAI_API_KEY"]! }).responses(agent.model.slice("openai/".length))
+            : isGemini
+              ? createOpenAI({
+                  apiKey: process.env["GEMINI_API_KEY"]!,
+                  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
+                }).chat(agent.model.slice("google/".length))
+              : null;
+        if (!model) return json(400, "Unsupported agent provider");
 
-        const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
-        const provider = useGateway
-          ? createOpenAI({
-              baseURL: "https://ai.gateway.lovable.dev/v1",
-              apiKey: apiKey!,
-              headers: { "Lovable-API-Key": apiKey!, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-              fetch: runIdFetch.fetch,
-            })
-          : undefined;
-
-        let supportsTools = true;
-        if (useOllama) {
-          try {
-            const capabilities = await ollamaCapabilities(agent.model, request.signal);
-            supportsTools = capabilities.tools;
-            validateOllamaAttachments(messages, capabilities.vision);
-          } catch (error) {
-            return json(400, ollamaErrorMessage(error));
-          }
-        }
-        const modelId = agent.model === "foundry" ? "openai/gpt-6-astra" : agent.model;
-        const isOpenAI = useGateway && modelId.startsWith("openai/");
         const result = streamText({
-          model: useOllama
-            ? ollamaChatModel(agent.model)
-            : useFoundry
-              ? foundryProvider().responses("az-agent-copilot")
-              : isOpenAI
-                ? provider!.responses(modelId)
-                : provider!.chat(modelId),
-          tools: supportsTools
-            ? {
-                ...integrationTools(userId),
-                ...(agent.benchTools && benchToolsEnabled() ? benchTools() : {}),
-              }
-            : {},
-          stopWhen: stepCountIs(50),
-          system:
-            SYSTEM +
-            "\n\n" +
-            AGENT_DOMAIN_KNOWLEDGE +
-            "\n\n" +
-            agentPreferencePrompt(settings) +
-            (agent.instructions
-              ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}`
-              : ""),
+          model,
+          ...(agent.benchTools && benchToolsEnabled() ? { tools: benchTools(), stopWhen: stepCountIs(15) } : {}),
+          system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings)
+            + (agent.instructions ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}` : ""),
           messages: await convertToModelMessages(messages),
           abortSignal: request.signal,
-          providerOptions: useFoundry
-            ? { openai: { store: false } }
-            : isOpenAI
-              ? {
-                  openai: {
-                    forceReasoning: true,
-                    reasoningEffort: "medium",
-                    reasoningSummary: "auto",
-                    store: false,
-                    include: ["reasoning.encrypted_content"],
-                  },
-                }
-              : {},
+          providerOptions: isOpenAI ? {
+            openai: {
+              forceReasoning: true,
+              reasoningEffort: "medium",
+              reasoningSummary: "auto",
+              store: false,
+              include: ["reasoning.encrypted_content"],
+            },
+          } : {},
         });
 
         const response = result.toUIMessageStreamResponse({
@@ -193,7 +156,7 @@ export const Route = createFileRoute("/api/chat")({
             if (tErr) console.error("update thread failed", tErr);
           },
         });
-        return useGateway ? withLovableAiGatewayRunIdHeader(response, runIdFetch) : response;
+        return response;
       },
     },
   },

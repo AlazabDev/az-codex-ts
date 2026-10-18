@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const AGENT_MODELS = [
-  { id: "foundry", label: "Microsoft Foundry · az-agent-copilot" },
+  { id: "foundry", label: "Microsoft Foundry" },
   { id: "openai/gpt-6-astra", label: "GPT-6 Astra" },
   { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (سريع)" },
 ] as const;
@@ -32,25 +32,15 @@ export const agentProfileSchema = z.object({
   model: agentModelSchema,
   instructions: z.string().max(2000).default(""),
   benchTools: z.boolean().default(false),
+  foundryAgent: z.string().regex(/^az-agent-[a-z0-9-]+$/).optional(),
+  foundryVersion: z.string().regex(/^[0-9]+$/).optional(),
 });
 export type AgentProfile = z.infer<typeof agentProfileSchema>;
 
 export const DEFAULT_AGENTS: AgentProfile[] = [
-  { id: "azcodex", name: "AzCodex", model: "foundry", instructions: "", benchTools: true },
-  {
-    id: "astra",
-    name: "مساعد عام",
-    model: "openai/gpt-6-astra",
-    instructions: "",
-    benchTools: false,
-  },
-  {
-    id: "flash",
-    name: "سريع",
-    model: "google/gemini-2.5-flash",
-    instructions: "أجب باختصار وسرعة.",
-    benchTools: false,
-  },
+  { id: "azcodex", name: "AzCodex", model: "foundry", instructions: "", benchTools: true, foundryAgent: "az-agent-sol", foundryVersion: "9" },
+  { id: "astra", name: "مساعد عام", model: "openai/gpt-6-astra", instructions: "", benchTools: false },
+  { id: "flash", name: "سريع", model: "google/gemini-2.5-flash", instructions: "أجب باختصار وسرعة.", benchTools: false },
 ];
 export const MAX_AGENTS = 10;
 
