@@ -85,7 +85,19 @@ export const Route = createFileRoute("/api/chat")({
         if (isFoundry && !foundryConfigured()) return json(503, "Foundry credentials are not configured");
         if (isOpenAI && !process.env["OPENAI_API_KEY"]) return json(503, "OpenAI credentials are not configured");
         if (isGemini && !process.env["GEMINI_API_KEY"]) return json(503, "Gemini credentials are not configured");
-        const model = isFoundry
+        const useOllama = agent.model.startsWith("ollama/");
+        let ollama: Awaited<ReturnType<typeof ollamaCapabilities>> | undefined;
+        if (useOllama) {
+          try {
+            ollama = await ollamaCapabilities(agent.model, request.signal);
+            validateOllamaAttachments(messages, ollama.vision);
+          } catch (error) {
+            return json(503, ollamaErrorMessage(error));
+          }
+        }
+        const model = useOllama
+          ? ollamaChatModel(agent.model)
+          : isFoundry
           ? foundryProvider(agent.foundryAgent ?? (agent.id === "azcodex" ? "az-agent-sol" : `az-agent-${agent.id}`), agent.foundryVersion).responses("foundry-agent")
           : isOpenAI
             ? createOpenAI({ apiKey: process.env["OPENAI_API_KEY"]! }).responses(agent.model.slice("openai/".length))
@@ -99,7 +111,9 @@ export const Route = createFileRoute("/api/chat")({
 
         const result = streamText({
           model,
-          ...(agent.benchTools && benchToolsEnabled() ? { tools: benchTools(), stopWhen: stepCountIs(15) } : {}),
+          ...(agent.benchTools && benchToolsEnabled() && (!useOllama || ollama?.tools)
+            ? { tools: benchTools(), stopWhen: stepCountIs(15) }
+            : {}),
           system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings)
             + (agent.instructions ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}` : ""),
           messages: await convertToModelMessages(messages),

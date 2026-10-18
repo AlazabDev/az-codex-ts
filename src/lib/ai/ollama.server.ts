@@ -32,25 +32,12 @@ function upstreamError(status: number): OllamaError {
   return new OllamaError("upstream", `تعذر إكمال الطلب لدى Ollama (${status})؛ راجع سجل الخدمة.`);
 }
 
-// Only deployment configuration can choose the upstream host. Never accept a URL
-// from user metadata or RPC input: all authenticated users share this service.
+// Fixed application endpoint. Credentials remain server-side.
+export const OLLAMA_BASE_URL = "https://ollama.alazab.com";
+export const OLLAMA_TEST_TIMEOUT_MS = 300_000;
+
 export function ollamaConfig() {
-  let url: URL;
-  try {
-    url = new URL(process.env["OLLAMA_BASE_URL"] || "http://127.0.0.1:11434");
-  } catch {
-    throw new OllamaError("configuration", "إعداد عنوان Ollama على الخادم غير صالح.");
-  }
-  if (
-    !["http:", "https:"].includes(url.protocol) ||
-    url.username ||
-    url.password ||
-    url.search ||
-    url.hash
-  ) {
-    throw new OllamaError("configuration", "إعداد عنوان Ollama على الخادم غير صالح.");
-  }
-  const baseURL = url.toString().replace(/\/+$/, "").replace(/\/v1$/, "");
+  const baseURL = OLLAMA_BASE_URL;
   const username = process.env["OLLAMA_AUTH_USER"];
   const password = process.env["OLLAMA_AUTH_PASS"];
   if (Boolean(username) !== Boolean(password) || username?.includes(":")) {
@@ -76,14 +63,7 @@ export function ollamaConfig() {
 }
 
 export function ollamaTestTimeoutMs() {
-  const seconds = Number(process.env["OLLAMA_TEST_TIMEOUT_SECONDS"] || "300");
-  if (!Number.isInteger(seconds) || seconds < 15 || seconds > 900) {
-    throw new OllamaError(
-      "configuration",
-      "إعداد مهلة اختبار Ollama غير صالح؛ اختر عدد ثوانٍ بين 15 و900.",
-    );
-  }
-  return seconds * 1000;
+  return OLLAMA_TEST_TIMEOUT_MS;
 }
 
 export function ollamaModelName(model: string) {
