@@ -57,7 +57,7 @@ export function parseAgents(value: unknown): AgentsConfig {
   const list = parsed.data.list.filter((a) => !ids.has(a.id) && ids.add(a.id));
   const activeId = list.some((a) => a.id === parsed.data.activeId)
     ? parsed.data.activeId
-    : list[0]!.id;
+    : (list[0]?.id ?? "azcodex");
   return { list, activeId };
 }
 
@@ -65,6 +65,6 @@ export function resolveAgent(config: AgentsConfig, id: unknown): AgentProfile {
   return (
     config.list.find((a) => a.id === id) ??
     config.list.find((a) => a.id === config.activeId) ??
-    config.list[0]!
+    config.list[0] ?? DEFAULT_AGENTS[0] ?? { id: "azcodex", name: "AzCodex", model: "foundry", instructions: "", benchTools: false }
   );
 }
