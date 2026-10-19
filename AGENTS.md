@@ -13,10 +13,10 @@
 - Threads are read/written from the browser client under RLS (`src/lib/threads.ts`); thread pages live at `/chat/$threadId` under `_authenticated`.
 - Settings live on an authenticated sibling route; non-privileged agent preferences are stored in auth user metadata and validated on the server so chat consistently applies them.
 - Theme preferences use a root provider and browser storage with semantic light/dark tokens so every page shares the chosen appearance.
-- Agent connection checks use an authenticated server function against the existing model; credentials never reach the browser.
+- Agent connection checks use authenticated server functions against the selected profile, including unsaved Foundry targets; credentials never reach the browser.
 - Curated Git/Frappe reference context is injected into chat independently of user preferences; it distinguishes knowledge from live service access.
 - GitHub browsing uses authenticated server functions and encrypted per-user connector keys; the labeled example is isolated from live data.
 - Frappe setup stores only validated nonsecret display preferences in user metadata; real connection credentials and live reads remain disabled until authorized.
 - Chat uses the Microsoft Foundry agent (Entra client-credentials, `src/lib/ai/foundry.server.ts`) when Azure secrets exist, falling back to the AI Gateway — keeps one chat route for both.
-- Frappe bench tools (`src/lib/ai/bench-tools.server.ts`) run only when the app is self-hosted with BENCH_TOOLS_ENABLED=1; paths are confined to the bench and irreversible commands stay blocked.
+- Workspace tools require BENCH_TOOLS_ENABLED=1 and a server-controlled BENCH_ALLOWED_USER_IDS allowlist; real paths and credential-file exclusions confine reads, while writes and command execution stay disabled until durable server-verified approvals exist.
 - Database access goes straight through the Supabase client and migrations; no ORM layer.
