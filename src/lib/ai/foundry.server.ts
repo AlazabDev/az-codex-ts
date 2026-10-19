@@ -22,7 +22,7 @@ async function getToken() {
       scope: "https://ai.azure.com/.default",
     }),
   });
-  if (!res.ok) throw new Error(`Foundry auth failed [${res.status}]: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Foundry auth failed [${res.status}]`);
   const j = (await res.json()) as { access_token: string; expires_in: number };
   cached = { token: j.access_token, exp: Date.now() + j.expires_in * 1000 };
   return j.access_token;
@@ -38,6 +38,7 @@ export function foundryProvider(agentName: string, version?: string) {
     fetch: async (input, init) => {
       const headers = new Headers(init?.headers);
       headers.set("Authorization", `Bearer ${await getToken()}`);
+      headers.delete("api-key");
       let body = init?.body ?? null;
       if (typeof body === "string") {
         const parsed = JSON.parse(body) as Record<string, unknown>;
