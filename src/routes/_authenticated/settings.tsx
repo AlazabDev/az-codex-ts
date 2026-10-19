@@ -16,6 +16,7 @@ import { useTheme } from "@/components/theme-provider";
 import { AzLogo } from "@/components/AzLogo";
 import { parseAgentSettings, type AgentSettings } from "@/lib/agent-settings";
 import { testAgentConnection } from "@/lib/agent.functions";
+import { agentModelLabel, parseAgents, resolveAgent } from "@/lib/agents";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [
@@ -34,6 +35,7 @@ function SettingsPage() {
   const { user } = Route.useRouteContext();
   const { tab } = Route.useSearch();
   const { theme, setTheme } = useTheme();
+  const activeAgent = resolveAgent(parseAgents(user.user_metadata["agents"]), undefined);
   const checkConnection = useServerFn(testAgentConnection);
   const [name, setName] = useState<string>(typeof user.user_metadata["full_name"] === "string" ? user.user_metadata["full_name"] : "");
   const [email, setEmail] = useState(user.email ?? "");
@@ -130,7 +132,7 @@ function SettingsPage() {
           <TabsContent value="agent" className="max-w-2xl">
             <h2 className="mb-6 text-xl font-semibold">اتصال الوكيل</h2>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-y border-border py-5">
-              <div><p className="font-medium">Lovable AI</p><p className="mt-1 font-mono text-sm text-muted-foreground">gpt-6-astra</p></div>
+              <div><p className="font-medium">{activeAgent.name}</p><p className="mt-1 font-mono text-sm text-muted-foreground">{agentModelLabel(activeAgent.model)}</p></div>
               <Button variant="outline" onClick={testConnection} disabled={checking}>{checking ? <Loader2 className="animate-spin" /> : <Wifi />}{checking ? "جارٍ الاتصال…" : "اختبار الاتصال"}</Button>
             </div>
             <div aria-live="polite">{connection && <p className={`mb-6 flex items-start gap-2 text-sm ${connection.ok ? "text-brand-text" : "text-destructive"}`}>{connection.ok ? <CheckCircle2 className="size-4 shrink-0" /> : <CircleAlert className="size-4 shrink-0" />}{connection.message}</p>}</div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Plus, Save, Trash2, RefreshCw, PlugZap } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,8 +27,12 @@ import {
 } from "@/lib/agents";
 
 import { getOllamaModels, testOllamaConnection } from "@/lib/ollama.functions";
+import { testAgentProfileConnection } from "@/lib/agent.functions";
 
 export function AgentsManager({ initial }: { initial: unknown }) {
+  const checkAgent = useServerFn(testAgentProfileConnection);
+  const listModels = useServerFn(getOllamaModels);
+  const checkOllama = useServerFn(testOllamaConnection);
   const qc = useQueryClient();
   const [config, setConfig] = useState(() => parseAgents(initial));
   const [saving, setSaving] = useState(false);
@@ -37,13 +42,13 @@ export function AgentsManager({ initial }: { initial: unknown }) {
   );
   const ollama = useQuery({
     queryKey: ["ollama-models"],
-    queryFn: () => getOllamaModels(),
+    queryFn: () => listModels(),
     enabled: false,
     retry: false,
   });
   const ollamaModels = ollama.data?.ok ? ollama.data.models : [];
-  async function testModel(model: AgentModel) {
-    if (!model.startsWith("ollama/")) return;
+  async function testModel(agent: AgentProfile) {
+    const model = agent.model.startsWith("ollama/") ? agent.model : agent.id;
     setTestingModel(model);
     setTestResults((current) => {
       const next = { ...current };
@@ -51,7 +56,9 @@ export function AgentsManager({ initial }: { initial: unknown }) {
       return next;
     });
     try {
-      const result = await testOllamaConnection({ data: model as `ollama/${string}` });
+      const result = agent.model.startsWith("ollama/")
+        ? await checkOllama({ data: agent.model as `ollama/${string}` })
+        : await checkAgent({ data: agent });
       setTestResults((current) => ({ ...current, [model]: result }));
       if (result.ok) toast.success(result.message);
       else toast.error(result.message);
@@ -82,7 +89,9 @@ export function AgentsManager({ initial }: { initial: unknown }) {
   const remove = (id: string) =>
     setConfig((c) => {
       const list = c.list.filter((a) => a.id !== id);
-      return { list, activeId: c.activeId === id ? list[0]!.id : c.activeId };
+      const first = list[0];
+      if (!first) return c;
+      return { list, activeId: c.activeId === id ? first.id : c.activeId };
     });
   async function save() {
     const parsed = agentsSchema.safeParse(config);
@@ -110,10 +119,7 @@ export function AgentsManager({ initial }: { initial: unknown }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">
-        أنشئ وكلاء بأدوار ونماذج مختلفة، ثم بدّل بينهم من قائمة الوكيل أسفل مربع الكتابة في
-        المحادثة.
-      </p>
+      <div className="flex items-center justify-between border-b border-border pb-4"><h3 className="font-semibold">إدارة الوكلاء والاتصال</h3><span className="text-sm text-muted-foreground">{config.list.length} / {MAX_AGENTS}</span></div>
       <details className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
         <summary className="cursor-pointer font-medium">
           توجيهات ربط Microsoft Foundry (حساب Entra وصلاحية Azure AI User)
@@ -184,7 +190,7 @@ export function AgentsManager({ initial }: { initial: unknown }) {
           </li>
         </ol>
       </details>
-      <section aria-label="اتصال Ollama" className="space-y-3 rounded-lg border border-border p-4">
+      <section aria-label="اتصال Ollama" className="space-y-3 border-b border-border py-4">
         <h3 className="font-medium">Ollama — النماذج المحلية</h3>
         <p className="text-sm text-muted-foreground">
           اجلب النماذج من خدمة Ollama، ثم اختر أحدها لأي وكيل أدناه. النماذج الحالية تبقى متاحة.
@@ -275,25 +281,29 @@ export function AgentsManager({ initial }: { initial: unknown }) {
               </SelectContent>
             </Select>
           </div>
-          {a.model.startsWith("ollama/") && (
+          {a.model === "foundry" && <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2"><Label htmlFor={`foundry-name-${a.id}`}>اسم وكيل Foundry</Label><Input id={`foundry-name-${a.id}`} dir="ltr" placeholder="az-agent-sol" value={a.foundryAgent ?? ""} onChange={(e) => patch(a.id, { foundryAgent: e.target.value || undefined })} /></div>
+            <div className="space-y-2"><Label htmlFor={`foundry-version-${a.id}`}>الإصدار</Label><Input id={`foundry-version-${a.id}`} dir="ltr" inputMode="numeric" placeholder="آخر إصدار" value={a.foundryVersion ?? ""} onChange={(e) => patch(a.id, { foundryVersion: e.target.value || undefined })} /></div>
+          </div>}
+          {(
             <div className="space-y-2">
               <Button
                 type="button"
                 variant="outline"
                 disabled={testingModel !== null}
-                onClick={() => void testModel(a.model)}
+                onClick={() => void testModel(a)}
               >
                 <PlugZap />
-                {testingModel === a.model ? "جارٍ اختبار النموذج…" : "اختبار اتصال Ollama"}
+                {testingModel === (a.model.startsWith("ollama/") ? a.model : a.id) ? "جارٍ اختبار النموذج…" : a.model.startsWith("ollama/") ? "اختبار اتصال Ollama" : `اختبار اتصال ${a.name}`}
               </Button>
               <p
                 role="status"
                 aria-live="polite"
-                className={`text-sm ${testResults[a.model]?.ok === false ? "text-destructive" : "text-muted-foreground"}`}
+                className={`text-sm ${testResults[a.model.startsWith("ollama/") ? a.model : a.id]?.ok === false ? "text-destructive" : "text-muted-foreground"}`}
               >
-                {testingModel === a.model
-                  ? "يجري اختبار توليد رد فعلي؛ قد يستغرق تحميل النموذج على المعالج عدة دقائق."
-                  : testResults[a.model]?.message}
+                {testingModel === (a.model.startsWith("ollama/") ? a.model : a.id)
+                  ? "جارٍ التحقق…"
+                  : testResults[a.model.startsWith("ollama/") ? a.model : a.id]?.message}
               </p>
             </div>
           )}
@@ -308,7 +318,7 @@ export function AgentsManager({ initial }: { initial: unknown }) {
             />
           </div>
           <div className="flex items-center justify-between gap-4">
-            <Label>السماح بأدوات البنش (على السيرفر فقط)</Label>
+            <Label>قراءة ملفات البنش للمستخدم المصرح له</Label>
             <Switch
               checked={a.benchTools}
               onCheckedChange={(benchTools) => patch(a.id, { benchTools })}
