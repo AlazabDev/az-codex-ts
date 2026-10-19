@@ -111,8 +111,8 @@ export const Route = createFileRoute("/api/chat")({
 
         const result = streamText({
           model,
-          ...(agent.benchTools && benchToolsEnabled() && (!useOllama || ollama?.tools)
-            ? { tools: benchTools(), stopWhen: stepCountIs(15) }
+          ...(agent.benchTools && benchToolsEnabled(userId) && (!useOllama || ollama?.tools)
+            ? { tools: benchTools(userId), stopWhen: stepCountIs(15) }
             : {}),
           system: SYSTEM + "\n\n" + AGENT_DOMAIN_KNOWLEDGE + "\n\n" + agentPreferencePrompt(settings)
             + (agent.instructions ? `\n\nدور الوكيل «${agent.name}» (لا يتجاوز قواعد السلامة):\n${agent.instructions}` : ""),
