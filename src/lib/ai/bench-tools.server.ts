@@ -5,8 +5,8 @@ import { workspacePathAllowed, workspaceUserAllowed } from "@/lib/workspace-poli
 // Full-auto tools. Only active on the self-hosted server (BENCH_TOOLS_ENABLED=1).
 // Writes and commands remain unavailable until durable server-side approvals exist.
 
-export function benchToolsEnabled(userId: string) {
-  return process.env["BENCH_TOOLS_ENABLED"] === "1" && workspaceUserAllowed(userId, process.env["BENCH_ALLOWED_USER_IDS"]);
+export function benchToolsEnabled() {
+  return process.env["BENCH_TOOLS_ENABLED"] === "1";
 }
 
 async function safePath(rel: string, rootType: "bench" | "codex" = "bench") {
